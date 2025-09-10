@@ -18,6 +18,7 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/sqlserver/
 /vendor
 Homestead.json
 Homestead.yaml
