@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('escenarios', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('id_formulario');
+            $table->unsignedInteger('formulario_id');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->string('nombre');
             $table->string('url_base');
-            $table->string('plantilla_subida');
-            $table->string('excel');
-            $table->string('mapa_centro');
-            $table->string('mapa_izquierda');
+            $table->string('plantilla_subida')->nullable();
+            $table->string('excel')->nullable();
+            $table->string('mapa_centro')->nullable();
+            $table->string('mapa_izquierda')->nullable();
             $table->timestamps();
         });
     }

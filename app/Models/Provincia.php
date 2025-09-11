@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UbigeoPeruProvince extends Model
+class Provincia extends Model
 {
+    //
 }
