@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Plantillab;
 use Illuminate\Http\Request;
 
-class PlantillabController extends Controller
+class PlantillaBController extends Controller
 {
     /**
      * Display a listing of the resource.

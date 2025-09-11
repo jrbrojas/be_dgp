@@ -9,35 +9,12 @@ class FormularioController extends Controller
 {
     public function index()
     {
-        return Formulario::all();
+        $formularios = Formulario::get();
+        return $formularios;
     }
 
-    public function show(Formulario $entidad)
+    public function show(Formulario $formulario)
     {
-        return $entidad;
+        return $formulario;
     }
-
-    /*
-    public function store(FormularioStoreRequest $request)
-    {
-        $data = $request->all();
-        $entidad = new Formulario();
-        $entidad->fill($data);
-        $entidad->save();
-        return $entidad;
-    }
-
-
-    public function update(FormularioStoreRequest $request, Formulario $entidad)
-    {
-        $entidad->update($request->all());
-        return $entidad;
-    }
-
-    public function destroy(Formulario $entidad)
-    {
-        $entidad->delete();
-        return $entidad;
-    }
-    */
 }

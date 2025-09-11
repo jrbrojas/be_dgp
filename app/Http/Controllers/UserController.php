@@ -13,7 +13,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        return User::all();
+        $usuarios = User::get();
+        return $usuarios;
     }
 
     /**
@@ -21,12 +22,12 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // creacion de prueba
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
         ]);
         $data['password'] = '12345';
-
         User::create($data);
     }
 

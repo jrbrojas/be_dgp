@@ -84,15 +84,15 @@ class EscenarioController extends Controller
         if (null === $file) {
             return "";
         }
-        $name = $file->getClientOriginalName();
-        $unixtime = time();
-        $url = "escenarios/{$unixtime}-{$name}";
-        Storage::disk('local')->put($url, file_get_contents($file));
-        return $url;
+        $timestamp = now()->timestamp;
+        $filename = $timestamp . '-' . $file->getClientOriginalName();
+        return $file->storeAs('escenarios', $filename, 'local');
     }
 
     public function deleteFile(string $path)
     {
-        Storage::disk('local')->delete($path);
+        if ($path && Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->delete($path);
+        }
     }
 }

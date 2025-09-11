@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class PlantillaB extends Model
 {
-    protected $table = 'plantilla_a';
+    protected $table = 'plantilla_b';
 }
