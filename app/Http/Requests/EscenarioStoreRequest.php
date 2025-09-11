@@ -27,9 +27,6 @@ class EscenarioStoreRequest extends FormRequest
             'fecha_fin' => 'required|date',
             'nombre' => 'required|string|max:255',
             'url_base' => 'required|string',
-            'tipo' => 'required|string|max:255',
-            'ubigeo' => 'required|integer',
-            'anio' => 'required|integer',
         ];
     }
 }

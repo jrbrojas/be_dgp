@@ -2,10 +2,9 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
-    restart: always
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "th1s@p4ssw0rd"
+      MSSQL_SA_PASSWORD: th1s@p4ssw0rd
     ports:
       - "1437:1433"
     volumes:
