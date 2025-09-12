@@ -9,38 +9,35 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function create(Request $request)
+    public function login(LoginRequest $request)
     {
-        $user = User::create($request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]));
-
+        $token = $request->authenticate();
         return response()->json([
-            'message' => 'Registro exitoso',
-            'user' => $user
+            'status' => 'success',
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60,
+            'user' => Auth::user(),
         ]);
     }
 
-    public function store(LoginRequest $request)
+    public function me()
     {
-        $request->authenticate();
-
-        $request->session()->regenerate();
-        $token = $request->user()->createToken($request->token_name);
-        return Auth::user();
-        return response()->json([
-            'token' => $token,
-            'user' => Auth::user()->load('roles')
-        ]);
+        return response()->json(auth()->user());
     }
 
-    public function destroy(Request $request)
+    public function logout()
     {
-        $request->user()->currentAccessToken()->delete();
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        auth()->logout();
+        return response()->json(['message' => 'Sesión cerrada correctamente']);
+    }
+
+    public function refresh()
+    {
+        return $this->respondWithToken(auth()->refresh());
+    }
+
+    protected function respondWithToken($token)
+    {
     }
 }

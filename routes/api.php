@@ -10,9 +10,9 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthController::class, 'store'])->middleware('web')->name('login');
+Route::post('/v1/login', [AuthController::class, 'login']);
 
-Route::group(['middleware' => ['auth:sanctum'], 'prefix' => 'v1'], function () {
+Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
     // escenarios
     Route::apiResource('/escenarios', EscenarioController::class);
 
@@ -28,6 +28,9 @@ Route::group(['middleware' => ['auth:sanctum'], 'prefix' => 'v1'], function () {
 
     //usuarios
     Route::apiResource('/usuarios', UserController::class);
-    Route::post('/logout', [AuthController::class, 'destroy']);
 
+    // auth
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::get('/me', [AuthController::class, 'me']);
 });

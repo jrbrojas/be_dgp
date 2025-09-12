@@ -14,7 +14,11 @@ class UserController extends Controller
     public function index()
     {
         $usuarios = User::get();
-        return $usuarios;
+        // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
+        return response()->json([
+            'list' => $usuarios,
+            'total' => $usuarios->count(),
+        ]);
     }
 
     /**

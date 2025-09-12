@@ -16,7 +16,11 @@ class EscenarioController extends Controller
 {
     public function index()
     {
-        return Escenario::with('formulario')->get();
+        $escenarios = Escenario::with('formulario')->get();
+        return response()->json([
+            'list' => $escenarios,
+            'total' => $escenarios->count(),
+        ]);
     }
 
     public function show(Escenario $entidad)
