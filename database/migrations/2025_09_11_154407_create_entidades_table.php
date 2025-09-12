@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('entidades', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('departamento_id');
-            $table->unsignedInteger('provincia_id');
-            $table->unsignedInteger('distrito_id');
+            $table->foreignId('departamento_id')->constrained('departamentos')->onDelete('cascade');
+            $table->foreignId('provincia_id')->constrained('provincias')->onDelete('cascade');
+            $table->foreignId('distrito_id')->constrained('distritos')->onDelete('cascade');
             $table->integer('ubigeo');
             $table->string('nombre', 255);
             $table->string('tipo', 255)->default('Municipalidad');

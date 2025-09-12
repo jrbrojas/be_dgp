@@ -1,0 +1,30 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class UserSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        User::create([
+            'avatar' => '/img/avatars/thumb-2.jpg',
+            'name' => 'Adminstrador',
+            'email' => 'admin@cenepred.gob.pe',
+            'password' => '12345',
+        ]);
+
+        User::create([
+            'avatar' => '/img/avatars/thumb-1.jpg',
+            'name' => 'Usuario',
+            'email' => 'usuario@cenepred.gob.pe',
+            'password' => '12345',
+        ]);
+    }
+}

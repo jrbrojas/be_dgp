@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('plantilla_a', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('escenario_id');
-            $table->unsignedInteger('formulario_id');
+            $table->foreignId('escenario_id')->constrained('escenarios')->onDelete('cascade');
+            $table->foreignId('formulario_id')->constrained('formularios')->onDelete('cascade');
             $table->string('tipo');
             $table->string('cod_cp')->nullable();
             $table->string('cod_ubigeo')->nullable();

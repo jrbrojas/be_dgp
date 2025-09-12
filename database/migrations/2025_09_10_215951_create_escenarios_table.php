@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('escenarios', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('formulario_id');
+            $table->foreignId('formulario_id')->constrained('formularios')->onDelete('cascade');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->string('nombre');
