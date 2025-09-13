@@ -33,29 +33,38 @@ class UserController extends Controller
         ]);
         $data['password'] = '12345';
         User::create($data);
+        return response()->json([
+            'message' => 'Usuario credo exitoasamente!'
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(User $usuario)
     {
-        //
+        return $usuario;
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $usuario)
     {
-        return $user;
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+        ]);
+        $usuario->update($data);
+        return response()->json(['message' => 'Usuario actualizado exitosamente!']);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $usuario)
     {
-        //
+        // $usuario->delete();
+        return response()->json(['message' => 'Usuario eliminado exitosamente']);
     }
 }

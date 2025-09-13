@@ -34,4 +34,14 @@ class Escenario extends Model
     {
         return $this->belongsTo(Formulario::class);
     }
+
+    public function plantillasA()
+    {
+        return $this->hasMany(PlantillaA::class);
+    }
+
+    public function plantillasB()
+    {
+        return $this->hasMany(PlantillaB::class);
+    }
 }

@@ -50,4 +50,27 @@ class PlantillaA extends Model
         'areas_naturales',
         'nivel_sequia',
     ];
+
+    public static function getByEscenario(Escenario $escenario)
+    {
+        return self::where('escenario_id', $escenario->id)
+            ->groupBy('nivel_exposicion_2_inu')
+            ->selectRaw('
+            nivel_exposicion_2_inu as nivel,
+            SUM(CASE WHEN tipo = \'INU_CP\' THEN COALESCE(CAST(NULLIF(poblacion, \'\') AS INTEGER), 0) ELSE 0 END) as total_poblacion,
+            SUM(CASE WHEN tipo = \'INU_CP\' THEN COALESCE(CAST(NULLIF(vivienda, \'\') AS INTEGER), 0) ELSE 0 END) as total_vivienda,
+            COUNT(CASE WHEN tipo = \'INU_CP\' THEN 1 END) as total_inu_cp,
+            COUNT(CASE WHEN tipo = \'INU_ES\' THEN 1 END) as total_inu_es,
+            COUNT(CASE WHEN tipo = \'INU_IE\' THEN 1 END) as total_inu_ie
+        ')
+        ->orderByRaw("
+            CASE nivel_exposicion_2_inu
+                WHEN 'Muy Alto' THEN 1
+                WHEN 'Alto' THEN 2
+                WHEN 'Medio' THEN 3
+                WHEN 'Bajo' THEN 4
+                WHEN 'Muy Bajo' THEN 5
+            END")
+        ->get();
+    }
 }
