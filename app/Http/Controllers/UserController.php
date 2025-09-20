@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $usuarios = User::get();
+        $usuarios = User::with('roles')->get();
         // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
         return response()->json([
             'list' => $usuarios,
@@ -28,11 +28,14 @@ class UserController extends Controller
     {
         // creacion de prueba
         $data = $request->validate([
+            'role' => 'required|exists:roles,name',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
         ]);
         $data['password'] = '12345';
-        User::create($data);
+        $usuario = User::create($data);
+        $usuario->assignRole($data['role']);
+
         return response()->json([
             'message' => 'Usuario credo exitoasamente!'
         ]);
@@ -52,10 +55,12 @@ class UserController extends Controller
     public function update(Request $request, User $usuario)
     {
         $data = $request->validate([
+            'role' => 'required|exists:roles,name',
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
         ]);
         $usuario->update($data);
+        $usuario->syncRoles($data['role']);
         return response()->json(['message' => 'Usuario actualizado exitosamente!']);
     }
 
@@ -64,7 +69,7 @@ class UserController extends Controller
      */
     public function destroy(User $usuario)
     {
-        // $usuario->delete();
+        $usuario->delete();
         return response()->json(['message' => 'Usuario eliminado exitosamente']);
     }
 }

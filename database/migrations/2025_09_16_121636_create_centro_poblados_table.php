@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('distritos', function (Blueprint $table) {
+        Schema::create('centro_poblados', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('provincia_id')->constrained('provincias')->onDelete('cascade');
+            $table->foreignId('distrito_id')->constrained('distritos')->onDelete('cascade');
             $table->string('codigo');
             $table->string('nombre');
-            $table->string('capital');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('distritos');
+        Schema::dropIfExists('centro_poblados');
     }
 };

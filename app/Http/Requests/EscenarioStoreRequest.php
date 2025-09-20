@@ -22,7 +22,7 @@ class EscenarioStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'formulario_id' => 'required|string',
+            'formulario_id' => 'required|exists:formularios,id',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date',
             'nombre' => 'required|string|max:255',

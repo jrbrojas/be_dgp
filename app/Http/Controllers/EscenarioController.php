@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\FormularioExport;
+use App\Exports\PlantillaExport;
 use App\Http\Requests\EscenarioStoreRequest;
 use App\Imports\EscenarioImport;
 use App\Models\Escenario;
+use App\Models\Formulario;
 use App\Models\PlantillaA;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -17,7 +18,7 @@ class EscenarioController extends Controller
 {
     public function index()
     {
-        $escenarios = Escenario::with('formulario')->get();
+        $escenarios = Escenario::with('formulario')->orderBy('created_at')->get();
         // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
         return response()->json([
             'list' => $escenarios,
@@ -25,14 +26,50 @@ class EscenarioController extends Controller
         ]);
     }
 
+    public function formulariosFull()
+    {
+        $formularios = Formulario::get();
+        // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
+        return response()->json([
+            'list' => $formularios,
+        ]);
+    }
+
     public function show(Escenario $escenario)
     {
+        // $clientId = env('POWERBI_CLIENT_ID', '');
+        // $clientSecret = env('POWERBI_CLIENT_SECRET', '');
+        // $tenantId = env('POWERBI_TENANT_ID', '');
+        // $workspaceId = env('POWERBI_WORKSPACE_ID', '');
+        // $reportId = env('POWERBI_REPORT_ID', '');
+
         $escenario->formulario->plantilla === 'A' ?
-        $data = PlantillaA::getByEscenario($escenario) :
-        $data =  []; //$escenario->load('plantillasB');
+            $data = PlantillaA::getByEscenario($escenario) :
+            $data =  []; //$escenario->load('plantillasB');
+
+        // Obtener Access Token desde Azure
+        // $url = "https://login.microsoftonline.com/{$tenantId}/oauth2/v2.0/token";
+        // $response = Http::asForm()->post($url, [
+        //     'grant_type' => 'client_credentials',
+        //     'client_id' => $clientId,
+        //     'client_secret' => $clientSecret,
+        //     'scope' => 'https://analysis.windows.net/powerbi/api/.default',
+        // ]);
+
+        // $accessToken = $response->json()['access_token'];
+
+        // Obtener detalles del reporte
+        // $reportUrl = "https://api.powerbi.com/v1.0/myorg/groups/{$workspaceId}/reports/{$reportId}";
+        // $reportResponse = Http::withToken($accessToken)->get($reportUrl);
+
+        // $reportData = $reportResponse->json();
+
         return response()->json([
             'escenario' => $escenario,
-            'plantillas' => $data
+            'plantillas' => $data,
+            // 'embedUrl' => $reportData['embedUrl'],
+            // 'reportId' => $reportId,
+            // 'accessToken' => $accessToken,
         ]);
     }
 
@@ -44,6 +81,7 @@ class EscenarioController extends Controller
             $data['excel'] = $this->storeFile($request->file('excel'));
             $data['mapa_centro'] = $this->storeFile($request->file('mapa_centro'));
             $data['mapa_izquierda'] = $this->storeFile($request->file('mapa_izquierda'));
+            // $escenario = Escenario::create($data);
             $escenario = Escenario::create($data);
 
             // procesar la plantilla
@@ -58,38 +96,41 @@ class EscenarioController extends Controller
     public function update(EscenarioStoreRequest $request, Escenario $escenario)
     {
         $data = $request->validated();
+        return DB::transaction(function () use ($request, $escenario, $data) {
 
-        if ($request->file('plantilla_subida')) {
-            $urlPlantillaSubida = $this->storeFile($request->file('plantilla_subida'));
-            $this->deleteFile($escenario->plantilla_subida);
-            $data['plantilla_subida'] = $urlPlantillaSubida;
-        }
+            if ($request->file('plantilla_subida')) {
+                $urlPlantillaSubida = $this->storeFile($request->file('plantilla_subida'));
+                $this->deleteFile($escenario->plantilla_subida);
+                $data['plantilla_subida'] = $urlPlantillaSubida;
+                Excel::import(new EscenarioImport($escenario->id), $request->file('plantilla'));
+            }
 
-        if ($request->file('excel')) {
-            $urlExcel = $this->storeFile($request->file('excel'));
-            $this->deleteFile($escenario->excel);
-            $data['excel'] = $urlExcel;
-        }
+            if ($request->file('excel')) {
+                $urlExcel = $this->storeFile($request->file('excel'));
+                $this->deleteFile($escenario->excel);
+                $data['excel'] = $urlExcel;
+            }
 
-        if ($request->file('mapa_centro')) {
-            $urlMapaCentro = $this->storeFile($request->file('mapa_centro'));
-            $this->deleteFile($escenario->mapa_centro);
-            $data['mapa_centro'] = $urlMapaCentro;
-        }
+            if ($request->file('mapa_centro')) {
+                $urlMapaCentro = $this->storeFile($request->file('mapa_centro'));
+                $this->deleteFile($escenario->mapa_centro);
+                $data['mapa_centro'] = $urlMapaCentro;
+            }
 
-        if ($request->file('mapa_izquierda')) {
-            $urlMapaIzquierda = $this->storeFile($request->file('mapa_izquierda'));
-            $this->deleteFile($escenario->mapa_izquierdo);
-            $data['mapa_izquierda'] = $urlMapaIzquierda;
-        }
+            if ($request->file('mapa_izquierda')) {
+                $urlMapaIzquierda = $this->storeFile($request->file('mapa_izquierda'));
+                $this->deleteFile($escenario->mapa_izquierdo);
+                $data['mapa_izquierda'] = $urlMapaIzquierda;
+            }
 
-        $escenario->update($data);
-        return $escenario;
+            $escenario->update($data);
+            return $escenario;
+        });
     }
 
     public function destroy(Request $request, Escenario $escenario)
     {
-        return DB::transaction(function() use($escenario) {
+        return DB::transaction(function () use ($escenario) {
             if ($escenario->plantilla_subida) {
                 $this->deleteFile($escenario->plantilla_subida);
             }
@@ -126,5 +167,11 @@ class EscenarioController extends Controller
         if ($path && Storage::disk('local')->exists($path)) {
             Storage::disk('local')->delete($path);
         }
+    }
+
+    public function downloadPlantilla(Request $request, Escenario $escenario)
+    {
+        $data = $request->input('data', []);
+        return Excel::download(new PlantillaExport($data), "plantilla_$escenario->id.xlsx");
     }
 }
