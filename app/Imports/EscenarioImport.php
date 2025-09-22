@@ -9,12 +9,16 @@ use App\Models\PlantillaA;
 use App\Models\Provincia;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithStartRow;
+use Illuminate\Support\Facades\DB;
 
-class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading
+class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading, ShouldQueue
 {
+    use Queueable;
     protected $escenario_id;
 
     public function __construct($escenario_id)
@@ -79,15 +83,12 @@ class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading
                 'nivel_sequia' => $row[38]
             ];
 
-            // $data[] = [
-            //     'distrito_id' => Distrito::where('codigo', substr($row[0], 0, 6))->first()->id,
-            //     'codigo' => $row[0],
-            //     'nombre' => $row[1],
-            //     // 'capital' => $row[6],
-            // ];
-
         }
-        PlantillaA::insert($data);
-        // CentroPoblado::insert($data);
+        DB::table('plantilla_a')->insert($data);
+    }
+
+    public function __destruct()
+    {
+        event(new ExcelImportCompleted($this->escenario_id));
     }
 }

@@ -18,7 +18,7 @@ class EscenarioController extends Controller
 {
     public function index()
     {
-        $escenarios = Escenario::with('formulario')->orderBy('created_at')->get();
+        $escenarios = Escenario::with('formulario')->orderBy('created_at', 'desc')->get();
         // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
         return response()->json([
             'list' => $escenarios,
@@ -76,33 +76,32 @@ class EscenarioController extends Controller
     public function store(EscenarioStoreRequest $request)
     {
         $data = $request->validated();
-        return DB::transaction(function () use ($request, $data) {
+        $escenario = DB::transaction(function () use ($request, $data) {
             $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
             $data['excel'] = $this->storeFile($request->file('excel'));
             $data['mapa_centro'] = $this->storeFile($request->file('mapa_centro'));
             $data['mapa_izquierda'] = $this->storeFile($request->file('mapa_izquierda'));
             // $escenario = Escenario::create($data);
-            $escenario = Escenario::create($data);
-
-            // procesar la plantilla
-            if ($request->file('plantilla')) {
-                Excel::import(new EscenarioImport($escenario->id, $escenario->formulario_id), $request->file('plantilla'));
-            }
-
-            return $escenario;
+            return Escenario::create($data);
         });
+        
+        // procesar la plantilla
+        if ($request->file('plantilla')) {
+            Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
+        }
+        
+        return response()->json(['message' => 'Escenario creado correctamente!']);
     }
 
     public function update(EscenarioStoreRequest $request, Escenario $escenario)
     {
         $data = $request->validated();
-        return DB::transaction(function () use ($request, $escenario, $data) {
+        DB::transaction(function () use ($request, $escenario, $data) {
 
-            if ($request->file('plantilla_subida')) {
-                $urlPlantillaSubida = $this->storeFile($request->file('plantilla_subida'));
+            if ($request->file('plantilla')) {
+                $urlPlantillaSubida = $this->storeFile($request->file('plantilla'));
                 $this->deleteFile($escenario->plantilla_subida);
                 $data['plantilla_subida'] = $urlPlantillaSubida;
-                Excel::import(new EscenarioImport($escenario->id), $request->file('plantilla'));
             }
 
             if ($request->file('excel')) {
@@ -126,6 +125,12 @@ class EscenarioController extends Controller
             $escenario->update($data);
             return $escenario;
         });
+
+        if ($request->file('plantilla')) {
+            Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
+        }
+        
+        return response()->json(['message' => 'Escenario actualizado correctamente!']);
     }
 
     public function destroy(Request $request, Escenario $escenario)
