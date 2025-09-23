@@ -11,9 +11,9 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $usuarios = User::with('roles')->get();
+        $usuarios = User::with('roles')->search($request['query'])->orderBy('name')->get();
         // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
         return response()->json([
             'list' => $usuarios,

@@ -3,10 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -48,6 +50,13 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function scopeSearch(Builder $query, $value)
+    {
+        Log::info($value);
+        $query->where('name', 'ilike', "%{$value}%")
+            ->orWhere('email', 'ilike', "%{$value}%");
     }
 
     public function getJWTIdentifier()

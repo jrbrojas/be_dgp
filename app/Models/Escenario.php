@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,18 @@ class Escenario extends Model
             'fecha_inicio' => 'date',
             'fecha_fin' => 'date',
         ];
+    }
+
+    public function scopeSearch(Builder $query, $value)
+    {
+        $query->where('nombre', 'ilike', "%{$value}%")
+            ->orWhere('fecha_inicio', 'ilike', "%{$value}%")
+            ->orWhere('fecha_fin', 'ilike', "%{$value}%")
+            ->orWhere('url_base', 'ilike', "%{$value}%")
+            ->orWhereHas('formulario', function ($query) use ($value) {
+                $query->where('nombre', 'ilike', "%{$value}%")
+                    ->orWhere('peligro', 'ilike', "%{$value}%");
+            });
     }
 
     public function formulario(): BelongsTo

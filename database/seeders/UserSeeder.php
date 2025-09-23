@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     {
         User::create([
             'avatar' => '/img/avatars/thumb-2.jpg',
-            'name' => 'Adminstrador',
+            'name' => 'Administrador',
             'email' => 'admin@cenepred.gob.pe',
             'password' => '12345',
         ])->assignRole(Role::firstWhere('name', 'admin'));;

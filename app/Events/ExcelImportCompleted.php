@@ -29,9 +29,9 @@ class ExcelImportCompleted
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
-        return new Channel('escenario.'.$this->escenarioId);    
+        return new Channel("excel-import-escenario.{$this->escenarioId}");
     }
 
     public function broadcastAs()

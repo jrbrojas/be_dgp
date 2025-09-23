@@ -16,9 +16,12 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EscenarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $escenarios = Escenario::with('formulario')->orderBy('created_at', 'desc')->get();
+        $escenarios = Escenario::with('formulario')
+            ->search($request['query'])
+            ->orderBy('created_at', 'desc')
+            ->get();
         // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
         return response()->json([
             'list' => $escenarios,
@@ -84,12 +87,12 @@ class EscenarioController extends Controller
             // $escenario = Escenario::create($data);
             return Escenario::create($data);
         });
-        
+
         // procesar la plantilla
         if ($request->file('plantilla')) {
             Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
         }
-        
+
         return response()->json(['message' => 'Escenario creado correctamente!']);
     }
 
@@ -101,6 +104,7 @@ class EscenarioController extends Controller
             if ($request->file('plantilla')) {
                 $urlPlantillaSubida = $this->storeFile($request->file('plantilla'));
                 $this->deleteFile($escenario->plantilla_subida);
+                $escenario->plantillasA()->delete();
                 $data['plantilla_subida'] = $urlPlantillaSubida;
             }
 
@@ -129,7 +133,7 @@ class EscenarioController extends Controller
         if ($request->file('plantilla')) {
             Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
         }
-        
+
         return response()->json(['message' => 'Escenario actualizado correctamente!']);
     }
 

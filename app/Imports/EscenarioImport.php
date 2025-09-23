@@ -2,19 +2,15 @@
 
 namespace App\Imports;
 
-use App\Models\CentroPoblado;
-use App\Models\Departamento;
-use App\Models\Distrito;
-use App\Models\PlantillaA;
-use App\Models\Provincia;
+use App\Events\ExcelImportCompleted;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Events\AfterImport;
 
 class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading, ShouldQueue
 {
@@ -82,13 +78,19 @@ class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading, S
                 'areas_naturales' => $row[37] ?? 0,
                 'nivel_sequia' => $row[38]
             ];
-
         }
-        DB::table('plantilla_a')->insert($data);
+        foreach (array_chunk($data, 500) as $chunk) {
+            DB::table('plantilla_a')->insert($chunk);
+        }
+        // DB::table('plantilla_a')->insert($data);
     }
 
-    public function __destruct()
+    public function registerEvents(): array
     {
-        event(new ExcelImportCompleted($this->escenario_id));
+        return [
+            AfterImport::class => function () {
+                event(new ExcelImportCompleted($this->escenario_id));
+            },
+        ];
     }
 }

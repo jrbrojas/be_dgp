@@ -27,7 +27,12 @@ return new class extends Migration
             LEFT JOIN departamentos d1 ON pr1.departamento_id = d1.id
             LEFT JOIN distritos dr2 ON pla.tipo <> 'INU_CP' AND pla.cod_ubigeo = dr2.codigo
             LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
-            LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id;
+            LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+            WHERE pla.escenario_id = (
+                SELECT MAX(id)
+                FROM public.escenarios
+                WHERE formulario_id = 1
+            );
         ");
     }
 
