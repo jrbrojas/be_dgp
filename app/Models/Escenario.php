@@ -16,6 +16,7 @@ class Escenario extends Model
         'fecha_inicio',
         'fecha_fin',
         'nombre',
+        'aviso',
         'url_base',
         'plantilla_subida',
         'excel',
@@ -34,6 +35,7 @@ class Escenario extends Model
     public function scopeSearch(Builder $query, $value)
     {
         $query->where('nombre', 'ilike', "%{$value}%")
+            ->orWhere('aviso', 'ilike', "%{$value}%")
             ->orWhere('fecha_inicio', 'ilike', "%{$value}%")
             ->orWhere('fecha_fin', 'ilike', "%{$value}%")
             ->orWhere('url_base', 'ilike', "%{$value}%")

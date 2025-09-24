@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             [
                 FormulariosSeeder::class,
                 RoleSeeder::class,
-                PermissionSeeder::class,
                 UserSeeder::class,
             ]
         );

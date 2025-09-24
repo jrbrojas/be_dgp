@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->string('nombre');
+            $table->smallInteger('aviso');
             $table->string('url_base');
             $table->string('plantilla_subida')->nullable();
             $table->string('excel')->nullable();

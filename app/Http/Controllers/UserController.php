@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $usuarios = User::with('roles')->search($request['query'])->orderBy('name')->get();
+        $usuarios = User::with('role')->search($request['query'])->orderBy('name')->get();
         // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
         return response()->json([
             'list' => $usuarios,
@@ -28,13 +28,12 @@ class UserController extends Controller
     {
         // creacion de prueba
         $data = $request->validate([
-            'role' => 'required|exists:roles,name',
+            'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
         ]);
         $data['password'] = '12345';
-        $usuario = User::create($data);
-        $usuario->assignRole($data['role']);
+        User::create($data);
 
         return response()->json([
             'message' => 'Usuario credo exitoasamente!'
@@ -55,12 +54,11 @@ class UserController extends Controller
     public function update(Request $request, User $usuario)
     {
         $data = $request->validate([
-            'role' => 'required|exists:roles,name',
+            'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
         ]);
         $usuario->update($data);
-        $usuario->syncRoles($data['role']);
         return response()->json(['message' => 'Usuario actualizado exitosamente!']);
     }
 

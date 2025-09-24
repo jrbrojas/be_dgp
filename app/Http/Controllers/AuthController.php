@@ -17,13 +17,13 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
-            'user' => Auth::user(),
+            'user' => Auth::user()->load('role'),
         ]);
     }
 
     public function me()
     {
-        return response()->json(auth()->user());
+        return response()->json(auth()->user()->load('role'));
     }
 
     public function logout()
