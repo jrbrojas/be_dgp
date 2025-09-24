@@ -19,13 +19,13 @@ class UserSeeder extends Seeder
             'name' => 'Administrador',
             'email' => 'admin@cenepred.gob.pe',
             'password' => '12345',
-        ])->assignRole(Role::firstWhere('name', 'admin'));;
+        ]);
 
         User::create([
             'avatar' => '/img/avatars/thumb-1.jpg',
             'name' => 'Usuario',
             'email' => 'usuario@cenepred.gob.pe',
             'password' => '12345',
-        ])->assignRole(Role::firstWhere('name', 'usuario'));;
+        ]);
     }
 }
