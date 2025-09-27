@@ -17,12 +17,15 @@ return new class extends Migration
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->string('nombre');
-            $table->smallInteger('aviso');
+            $table->string('subtitulo')->nullable();
+            $table->string('titulo_base')->nullable();
+            $table->smallInteger('aviso')->nullable();
             $table->string('url_base');
             $table->string('plantilla_subida')->nullable();
             $table->string('excel')->nullable();
             $table->string('mapa_centro')->nullable();
-            $table->string('mapa_izquierda')->nullable();
+            $table->string('mapa_izquierdo')->nullable();
+            $table->string('mapa_derecho')->nullable();
             $table->timestamps();
         });
     }

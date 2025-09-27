@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Events\AfterImport;
 
 class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading, ShouldQueue
@@ -39,8 +40,8 @@ class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading, S
             $data[] = [
                 'escenario_id' => $this->escenario_id,
                 'tipo' => $row[0],
-                'cod_cp' => $row[1],
-                'cod_ubigeo' => $row[2],
+                'cod_cp' => $row[1] ? str_pad($row[1], 10, '0', STR_PAD_LEFT) : '',
+                'cod_ubigeo' => $row[2] ? str_pad($row[2], 6, '0', STR_PAD_LEFT) : '',
                 'poblacion' => $row[3] ?? 0,
                 'vivienda' => $row[4] ?? 0,
                 'ie' => $row[5] ?? 0,
@@ -79,10 +80,7 @@ class EscenarioImport implements ToCollection, WithStartRow, WithChunkReading, S
                 'nivel_sequia' => $row[38]
             ];
         }
-        foreach (array_chunk($data, 500) as $chunk) {
-            DB::table('plantilla_a')->insert($chunk);
-        }
-        // DB::table('plantilla_a')->insert($data);
+        DB::table('plantilla_a')->insert($data);
     }
 
     public function registerEvents(): array

@@ -11,6 +11,7 @@ use App\Models\PlantillaA;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -40,39 +41,13 @@ class EscenarioController extends Controller
 
     public function show(Escenario $escenario)
     {
-        // $clientId = env('POWERBI_CLIENT_ID', '');
-        // $clientSecret = env('POWERBI_CLIENT_SECRET', '');
-        // $tenantId = env('POWERBI_TENANT_ID', '');
-        // $workspaceId = env('POWERBI_WORKSPACE_ID', '');
-        // $reportId = env('POWERBI_REPORT_ID', '');
 
-        $escenario->formulario->plantilla === 'A' ?
-            $data = PlantillaA::getByEscenario($escenario) :
-            $data =  []; //$escenario->load('plantillasB');
-
-        // Obtener Access Token desde Azure
-        // $url = "https://login.microsoftonline.com/{$tenantId}/oauth2/v2.0/token";
-        // $response = Http::asForm()->post($url, [
-        //     'grant_type' => 'client_credentials',
-        //     'client_id' => $clientId,
-        //     'client_secret' => $clientSecret,
-        //     'scope' => 'https://analysis.windows.net/powerbi/api/.default',
-        // ]);
-
-        // $accessToken = $response->json()['access_token'];
-
-        // Obtener detalles del reporte
-        // $reportUrl = "https://api.powerbi.com/v1.0/myorg/groups/{$workspaceId}/reports/{$reportId}";
-        // $reportResponse = Http::withToken($accessToken)->get($reportUrl);
-
-        // $reportData = $reportResponse->json();
+        // $data = PlantillaA::getByFormularioAvisoMeteorologico($escenario);
+        $data = Escenario::getByFormulario($escenario);
 
         return response()->json([
-            'escenario' => $escenario,
+            'escenario' => $escenario->load('formulario'),
             'plantillas' => $data,
-            // 'embedUrl' => $reportData['embedUrl'],
-            // 'reportId' => $reportId,
-            // 'accessToken' => $accessToken,
         ]);
     }
 
@@ -82,9 +57,9 @@ class EscenarioController extends Controller
         $escenario = DB::transaction(function () use ($request, $data) {
             $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
             $data['excel'] = $this->storeFile($request->file('excel'));
-            $data['mapa_centro'] = $this->storeFile($request->file('mapa_centro'));
-            $data['mapa_izquierda'] = $this->storeFile($request->file('mapa_izquierda'));
-            // $escenario = Escenario::create($data);
+            $data['mapa_centro'] = $this->storeFile($request->file('mapa_centro'), 'public');
+            $data['mapa_izquierdo'] = $this->storeFile($request->file('mapa_izquierdo'), 'public');
+            $data['mapa_derecho'] = $this->storeFile($request->file('mapa_derecho'), 'public');
             return Escenario::create($data);
         });
 
@@ -99,40 +74,52 @@ class EscenarioController extends Controller
     public function update(EscenarioStoreRequest $request, Escenario $escenario)
     {
         $data = $request->validated();
-        DB::transaction(function () use ($request, $escenario, $data) {
-
-            if ($request->file('plantilla')) {
-                $urlPlantillaSubida = $this->storeFile($request->file('plantilla'));
-                $this->deleteFile($escenario->plantilla_subida);
-                $escenario->plantillasA()->delete();
-                $data['plantilla_subida'] = $urlPlantillaSubida;
-            }
-
-            if ($request->file('excel')) {
-                $urlExcel = $this->storeFile($request->file('excel'));
-                $this->deleteFile($escenario->excel);
-                $data['excel'] = $urlExcel;
-            }
-
-            if ($request->file('mapa_centro')) {
-                $urlMapaCentro = $this->storeFile($request->file('mapa_centro'));
-                $this->deleteFile($escenario->mapa_centro);
-                $data['mapa_centro'] = $urlMapaCentro;
-            }
-
-            if ($request->file('mapa_izquierda')) {
-                $urlMapaIzquierda = $this->storeFile($request->file('mapa_izquierda'));
-                $this->deleteFile($escenario->mapa_izquierdo);
-                $data['mapa_izquierda'] = $urlMapaIzquierda;
-            }
-
-            $escenario->update($data);
-            return $escenario;
-        });
 
         if ($request->file('plantilla')) {
+            $urlPlantillaSubida = $this->storeFile($request->file('plantilla'));
+            if (!empty($escenario->plantilla_subida)) {
+                $this->deleteFile($escenario->plantilla_subida);
+            }
+            $escenario->plantillasA()->delete();
+            $data['plantilla_subida'] = $urlPlantillaSubida;
             Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
         }
+
+        if ($request->file('excel')) {
+            $urlExcel = $this->storeFile($request->file('excel'));
+            if (!empty($escenario->excel)) {
+                $this->deleteFile($escenario->excel);
+            }
+            $data['excel'] = $urlExcel;
+        }
+
+        if ($request->file('mapa_centro')) {
+            $urlMapaCentro = $this->storeFile($request->file('mapa_centro'), 'public');
+            if (!empty($escenario->mapa_centro)) {
+                $this->deleteFile($escenario->mapa_centro, 'public');
+            }
+            $data['mapa_centro'] = $urlMapaCentro;
+        }
+
+        if ($request->file('mapa_izquierdo')) {
+            $urlMapaIzquierdo = $this->storeFile($request->file('mapa_izquierdo'), 'public');
+            if (!empty($escenario->mapa_izquierdo)) {
+                $this->deleteFile($escenario->mapa_izquierdo, 'public');
+            }
+            $data['mapa_izquierdo'] = $urlMapaIzquierdo;
+        }
+
+        if ($request->file('mapa_derecho')) {
+            $urlMapaDerecho = $this->storeFile($request->file('mapa_derecho'), 'public');
+            if (!empty($escenario->mapa_derecho)) {
+                $this->deleteFile($escenario->mapa_derecho, 'public');
+            }
+            $data['mapa_derecho'] = $urlMapaDerecho;
+        }
+
+        DB::transaction(function () use ($request, $escenario, $data) {
+            $escenario->update($data);
+        });
 
         return response()->json(['message' => 'Escenario actualizado correctamente!']);
     }
@@ -152,8 +139,12 @@ class EscenarioController extends Controller
                 $this->deleteFile($escenario->mapa_centro);
             }
 
-            if ($escenario->mapa_izquierda) {
-                $this->deleteFile($escenario->mapa_izquierda);
+            if ($escenario->mapa_izquierdo) {
+                $this->deleteFile($escenario->mapa_izquierdo);
+            }
+
+            if ($escenario->mapa_derecho) {
+                $this->deleteFile($escenario->mapa_derecho);
             }
 
             $escenario->delete();
@@ -161,20 +152,20 @@ class EscenarioController extends Controller
         });
     }
 
-    public function storeFile(?UploadedFile $file): string
+    public function storeFile(?UploadedFile $file, string $acceso = 'local'): string
     {
         if (null === $file) {
             return "";
         }
         $timestamp = now()->timestamp;
         $filename = $timestamp . '-' . $file->getClientOriginalName();
-        return $file->storeAs('escenarios', $filename, 'local');
+        return $file->storeAs('escenarios', $filename, "$acceso");
     }
 
-    public function deleteFile(string $path)
+    public function deleteFile(string $path, string $acceso = 'local')
     {
-        if ($path && Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
+        if ($path && Storage::disk("$acceso")->exists($path)) {
+            Storage::disk("$acceso")->delete($path);
         }
     }
 

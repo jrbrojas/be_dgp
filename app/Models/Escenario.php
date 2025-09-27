@@ -16,12 +16,15 @@ class Escenario extends Model
         'fecha_inicio',
         'fecha_fin',
         'nombre',
+        'subtitulo',
+        'titulo_base',
         'aviso',
         'url_base',
         'plantilla_subida',
         'excel',
         'mapa_centro',
-        'mapa_izquierda',
+        'mapa_izquierdo',
+        'mapa_derecho',
     ];
 
     protected function casts(): array
@@ -35,6 +38,7 @@ class Escenario extends Model
     public function scopeSearch(Builder $query, $value)
     {
         $query->where('nombre', 'ilike', "%{$value}%")
+            ->orWhere('titulo_base', 'ilike', "%{$value}%")
             ->orWhere('aviso', 'ilike', "%{$value}%")
             ->orWhere('fecha_inicio', 'ilike', "%{$value}%")
             ->orWhere('fecha_fin', 'ilike', "%{$value}%")
@@ -58,5 +62,52 @@ class Escenario extends Model
     public function plantillasB()
     {
         return $this->hasMany(PlantillaB::class);
+    }
+
+    public static function getByFormulario(Escenario $escenario)
+    {
+        switch ($escenario->formulario_id) {
+            case 1:
+                return PlantillaA::getByFormularioAvisoMeteorologico($escenario);
+
+            case 2:
+                return PlantillaA::getByFormularioAvisoTrimestral($escenario);
+
+            case 3:
+                return PlantillaA::getByFormularioInformacionClimatica($escenario);
+
+            case 4:
+                return PlantillaA::getByFormularioBajasTempAvisoMeteorologico($escenario);
+
+            case 5:
+                return PlantillaA::getByFormularioBajasTempTrimestral($escenario);
+
+            case 6:
+                return PlantillaA::getByFormularioBajasTempClimatica($escenario);
+
+            case 7:
+                return PlantillaA::getByFormularioIncendiosNacional($escenario);
+
+            case 8:
+                return PlantillaA::getByFormularioIncendiosRegional($escenario);
+
+            case 9:
+                return PlantillaB::getByFormularioSismosTsunamiNacional($escenario);
+
+            case 10:
+                return PlantillaA::getByFormularioSismosTsunamiOtrosAmbitos($escenario);
+
+            case 11:
+                return PlantillaA::getByFormularioSequiasNacional($escenario);
+
+            case 12:
+                return PlantillaA::getByFormularioSequiasDepartamental($escenario);
+
+            case 13:
+                return PlantillaA::getByFormularioVolcanesNacional($escenario);
+
+            default:
+                return []; // O puedes lanzar una excepción si quieres forzar el manejo de errores
+        }
     }
 }

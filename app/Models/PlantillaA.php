@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Staudenmeir\LaravelCte\Query\Builder;
 
 class PlantillaA extends Model
 {
@@ -59,33 +61,271 @@ class PlantillaA extends Model
         'superficie_de_pastos' => 'decimal:8,2',
     ];
 
-    public static function getByEscenario(Escenario $escenario)
+    public static function getByFormularioAvisoMeteorologico(Escenario $escenario)
     {
-        return self::where('escenario_id', $escenario->id)
-            ->groupBy('nivel_exposicion_2_inu')
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('centro_poblados as cp', function ($join) {
+                $join->on('pla.cod_cp', '=', 'cp.codigo')
+                    ->where('pla.tipo', '=', 'INU_CP');
+            })
+            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id') // ruta desde centro poblado
+            ->leftJoin('distritos as dr_alt', function ($join) {
+                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')
+                    ->where('pla.tipo', '<>', 'INU_CP');
+            })
+            ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
+            ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
+            ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
+            ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
+            ->where('pla.escenario_id', $escenario->id)
             ->selectRaw("
-                nivel_exposicion_2_inu AS nivel,
-                SUM(CASE WHEN tipo = 'INU_CP' THEN poblacion ELSE 0 END) AS total_poblacion,
-                SUM(CASE WHEN tipo = 'INU_CP' THEN vivienda ELSE 0 END) AS total_vivienda,
-                COUNT(CASE WHEN tipo = 'INU_CP' THEN 1 END) AS total_inu_cp,
-                COUNT(CASE WHEN tipo = 'INU_ES' THEN 1 END) AS total_inu_es,
-                COUNT(CASE WHEN tipo = 'INU_IE' THEN 1 END) AS total_inu_ie,
-                STRING_AGG(DISTINCT SUBSTRING(cod_cp FROM 1 FOR 2), ', ' ORDER BY SUBSTRING(cod_cp FROM 1 FOR 2)) AS departamentos
+                pla.nivel_exposicion_2_inu AS nivel,
+                SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
+                SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
+                COUNT(CASE WHEN pla.tipo = 'INU_CP' THEN 1 END) AS total_centro_poblado,
+                COUNT(CASE WHEN pla.tipo = 'INU_ES' THEN 1 END) AS total_est_salud,
+                COUNT(CASE WHEN pla.tipo = 'INU_IE' THEN 1 END) AS total_inst_educativa,
+                ARRAY_AGG(DISTINCT COALESCE(d_cp.nombre, d_alt.nombre)) AS departamentos
             ")
+            ->whereNotNull('pla.nivel_exposicion_2_inu')
+            ->groupBy('pla.nivel_exposicion_2_inu')
             ->orderByRaw("
-                CASE nivel_exposicion_2_inu
-                    WHEN 'Muy Alto' THEN 1
-                    WHEN 'Alto' THEN 2
-                    WHEN 'Medio' THEN 3
-                    WHEN 'Bajo' THEN 4
-                    WHEN 'Muy Bajo' THEN 5
+                CASE UPPER(pla.nivel_exposicion_2_inu)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
                     ELSE 6
                 END
             ")
-            ->get()
-            ->map(function ($row) {
-                $row->departamentos = collect(explode(', ', $row->departamentos))->take(2);
-                return $row;
-            });
+            ->get();
+
+        // $inundaciones = DB::table('plantilla_a as pla')
+        //     ->withExpression('base', function ($query) use($escenario) {
+        //         $query->selectRaw("
+        //                 pla.id,
+        //                 pla.escenario_id,
+        //                 pla.nivel_exposicion_2_inu AS nivel,
+        //                 pla.tipo,
+        //                 pla.poblacion,
+        //                 pla.vivienda,
+        //                 COALESCE(d_cp.nombre, d_alt.nombre) AS departamento
+        //             ")
+        //             ->from('plantilla_a as pla')
+        //             ->leftJoin('centro_poblados as cp', function ($join) {
+        //                 $join->on('pla.cod_cp', '=', 'cp.codigo')
+        //                     ->where('pla.tipo', '=', 'INU_CP');
+        //             })
+        //             ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+        //             ->leftJoin('distritos as dr_alt', function ($join) {
+        //                 $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')
+        //                     ->where('pla.tipo', '<>', 'INU_CP');
+        //             })
+        //             ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
+        //             ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
+        //             ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
+        //             ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
+        //             ->where('pla.escenario_id', $escenario->id)
+        //             ->whereNotNull('pla.nivel_exposicion_2_inu');
+        //     })
+        //     ->get();
+
+        $movimiento_masa = DB::table('plantilla_a as pla')
+            ->leftJoin('distritos as dr', 'pla.cod_ubigeo', '=', 'dr.codigo')
+            ->leftJoin('provincias as pr', 'dr.provincia_id', '=', 'pr.id')
+            ->leftJoin('departamentos as d', 'pr.departamento_id', '=', 'd.id')
+            ->where('pla.escenario_id', $escenario->id)
+            ->where('pla.tipo', 'AM_MM')
+            ->selectRaw("
+                pla.nivel_riesgo AS nivel,
+                SUM(pla.poblacion) AS total_poblacion,
+                SUM(pla.vivienda) AS total_vivienda,
+                SUM(pla.es) AS total_est_salud,
+                SUM(pla.ie) AS total_inst_educativa,
+                COUNT(DISTINCT dr.id) AS total_distritos,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
+            ")
+            ->whereNotNull('pla.nivel_riesgo')
+            ->groupBy('pla.nivel_riesgo')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_riesgo)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get();
+
+        return [
+            'inundaciones' => $inundaciones,
+            'movimiento_masa' => $movimiento_masa,
+        ];
+    }
+
+    public static function getByFormularioAvisoTrimestral(Escenario $escenario)
+    {
+        // solo para formulario Lluvias Meteorologico
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->where('pla.escenario_id', $escenario->id)
+            ->selectRaw("
+                pla.nivel_exposicion_2_inu AS nivel,
+                SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
+                SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN 1 END) AS total_centro_poblado,
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_ES' THEN 1 END) AS total_est_salud,
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa
+            ")
+            ->whereNotNull('pla.nivel_exposicion_2_inu')
+            ->groupBy('pla.nivel_exposicion_2_inu')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_exposicion_2_inu)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get();
+
+        $movimiento_masa = DB::table('plantilla_a as pla')
+            ->where('pla.escenario_id', $escenario->id)
+            ->selectRaw("
+                pla.nivel_exposicion_1_mm AS nivel,
+                SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
+                SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN 1 END) AS total_centro_poblado,
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_ES' THEN 1 END) AS total_est_salud,
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa
+            ")
+            ->whereNotNull('pla.nivel_exposicion_1_mm')
+            ->groupBy('pla.nivel_exposicion_1_mm')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_exposicion_1_mm)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get();
+
+
+        return [
+            'inundaciones' => $inundaciones,
+            'movimiento_masa' => $movimiento_masa,
+        ];
+    }
+
+    public static function getByFormularioInformacionClimatica(Escenario $escenario)
+    {
+        // solo para formulario Lluvias Meteorologico
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('distritos as dr', 'pla.cod_ubigeo', '=', 'dr.codigo')
+            ->leftJoin('provincias as pr', 'dr.provincia_id', '=', 'pr.id')
+            ->leftJoin('departamentos as d', 'pr.departamento_id', '=', 'd.id')
+            ->where('pla.escenario_id', $escenario->id)
+            ->where('pla.tipo', 'CLI_INU')
+            ->selectRaw("
+                pla.nivel_riesgo AS nivel,
+                SUM(pla.poblacion) AS total_poblacion,
+                SUM(pla.vivienda) AS total_vivienda,
+                SUM(pla.es) AS total_est_salud,
+                SUM(pla.ie) AS total_inst_educativa,
+                SUM(pla.vias) AS total_vias,
+                SUM(pla.superficie_agricola) AS total_superficie_agricola,
+                COUNT(DISTINCT dr.id) AS total_distritos
+            ")
+            ->whereNotNull('pla.nivel_riesgo')
+            ->groupBy('pla.nivel_riesgo')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_riesgo)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get();
+
+        $movimiento_masa = DB::table('plantilla_a as pla')
+            ->leftJoin('distritos as dr', 'pla.cod_ubigeo', '=', 'dr.codigo')
+            ->leftJoin('provincias as pr', 'dr.provincia_id', '=', 'pr.id')
+            ->leftJoin('departamentos as d', 'pr.departamento_id', '=', 'd.id')
+            ->where('pla.escenario_id', $escenario->id)
+            ->where('pla.tipo', 'CLI_MM')
+            ->selectRaw("
+                pla.nivel_riesgo AS nivel,
+                SUM(pla.poblacion) AS total_poblacion,
+                SUM(pla.vivienda) AS total_vivienda,
+                SUM(pla.es) AS total_est_salud,
+                SUM(pla.ie) AS total_inst_educativa,
+                SUM(pla.vias) AS total_vias,
+                SUM(pla.superficie_agricola) AS total_superficie_agricola,
+                COUNT(DISTINCT dr.id) AS total_distritos
+            ")
+            ->whereNotNull('pla.nivel_riesgo')
+            ->groupBy('pla.nivel_riesgo')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_riesgo)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get();
+
+
+        return [
+            'inundaciones' => $inundaciones,
+            'movimiento_masa' => $movimiento_masa,
+        ];
+    }
+
+    public static function getByFormularioBajasTempAvisoMeteorologico(Escenario $escenario)
+    {
+        // solo para formulario Lluvias Meteorologico
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('distritos as dr', 'pla.cod_ubigeo', '=', 'dr.codigo')
+            ->leftJoin('provincias as pr', 'dr.provincia_id', '=', 'pr.id')
+            ->leftJoin('departamentos as d', 'pr.departamento_id', '=', 'd.id')
+            ->where('pla.escenario_id', $escenario->id)
+            ->where('pla.tipo', 'AM_DT')
+            ->selectRaw("
+                pla.nivel_riesgo AS nivel,
+                SUM(pla.poblacion) AS total_poblacion,
+                SUM(pla.vivienda) AS total_vivienda,
+                COUNT(DISTINCT dr.id) AS total_distritos,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
+            ")
+            ->whereNotNull('pla.nivel_riesgo')
+            ->groupBy('pla.nivel_riesgo')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_riesgo)
+                    WHEN 'MA' THEN 1
+                    WHEN 'A' THEN 2
+                    WHEN 'M' THEN 3
+                    WHEN 'B' THEN 4
+                    WHEN 'MB' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get();
+
+        return [
+            'inundaciones' => $inundaciones,
+        ];
     }
 }

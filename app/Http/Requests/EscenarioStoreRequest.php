@@ -26,6 +26,9 @@ class EscenarioStoreRequest extends FormRequest
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date',
             'nombre' => 'required|string|max:255',
+            'subtitulo' => 'nullable|string|max:255',
+            'titulo_base' => 'nullable|string|max:255',
+            'aviso' => 'nullable|string|max:255',
             'url_base' => 'required|string',
         ];
     }
