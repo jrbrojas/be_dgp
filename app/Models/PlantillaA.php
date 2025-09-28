@@ -65,115 +65,49 @@ class PlantillaA extends Model
     public static function getByFormularioAvisoMeteorologico(Escenario $escenario)
     {
 
-        $inundacionesBase = DB::table('plantilla_a as pla')
+        $inundaciones = DB::table('plantilla_a as pla')
             ->leftJoin('centro_poblados as cp', function ($join) {
-                $join->on('pla.cod_cp', '=', 'cp.codigo')
-                    ->where('pla.tipo', '=', 'INU_CP');
+                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'INU_CP');
             })
             ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
             ->leftJoin('distritos as dr_alt', function ($join) {
-                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')
-                    ->where('pla.tipo', '<>', 'INU_CP');
+                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'INU_CP');
             })
             ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
             ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
             ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
             ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
             ->where('pla.escenario_id', $escenario->id)
-            ->whereNotNull('pla.nivel_exposicion_2_inu');
-
-        // $inundaciones = (clone $inundacionesBase)
-        //     ->selectRaw("
-        //         pla.nivel_exposicion_2_inu AS nivel,
-        //         SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
-        //         SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
-        //         COUNT(CASE WHEN pla.tipo = 'INU_CP' THEN 1 END) AS total_centro_poblado,
-        //         COUNT(CASE WHEN pla.tipo = 'INU_ES' THEN 1 END) AS total_est_salud,
-        //         COUNT(CASE WHEN pla.tipo = 'INU_IE' THEN 1 END) AS total_inst_educativa,
-        //         ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'INU_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos
-        //     ")
-        //     ->groupBy('pla.nivel_exposicion_2_inu')
-        //     ->orderByRaw("
-        //         CASE UPPER(pla.nivel_exposicion_2_inu)
-        //             WHEN 'MUY ALTO' THEN 1
-        //             WHEN 'ALTO' THEN 2
-        //             WHEN 'MEDIO' THEN 3
-        //             WHEN 'BAJO' THEN 4
-        //             WHEN 'MUY BAJO' THEN 5
-        //             ELSE 6
-        //         END
-        //     ")
-        //     ->get();
-
-$inundaciones = DB::table('plantilla_a as pla')
-    ->leftJoin('centro_poblados as cp', function ($join) {
-        $join->on('pla.cod_cp', '=', 'cp.codigo')
-            ->where('pla.tipo', '=', 'INU_CP');
-    })
-    ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
-    ->leftJoin('distritos as dr_alt', function ($join) {
-        $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')
-            ->where('pla.tipo', '<>', 'INU_CP');
-    })
-    ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
-    ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
-    ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
-    ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
-    ->where('pla.escenario_id', $escenario->id)
-    ->whereNotNull('pla.nivel_exposicion_2_inu')
-    ->selectRaw("
-        pla.nivel_exposicion_2_inu AS nivel,
-        SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
-        SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
-        COUNT(CASE WHEN pla.tipo = 'INU_CP' THEN 1 END) AS total_centro_poblado,
-        COUNT(CASE WHEN pla.tipo = 'INU_ES' THEN 1 END) AS total_est_salud,
-        COUNT(CASE WHEN pla.tipo = 'INU_IE' THEN 1 END) AS total_inst_educativa,
-        ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'INU_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos,
-        (
-            SELECT json_agg(dep)
-            FROM (
-                SELECT COALESCE(dcp2.nombre, dalt2.nombre) AS departamento,
-                       SUM(p.poblacion) AS total_poblacion
-                FROM plantilla_a p
-                LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo AND p.tipo = 'INU_CP'
-                LEFT JOIN distritos dcpdr2 ON c2.distrito_id = dcpdr2.id
-                LEFT JOIN distritos daltdr2 ON p.cod_ubigeo = daltdr2.codigo AND p.tipo <> 'INU_CP'
-                LEFT JOIN provincias prcp2 ON dcpdr2.provincia_id = prcp2.id
-                LEFT JOIN provincias pralt2 ON daltdr2.provincia_id = pralt2.id
-                LEFT JOIN departamentos dcp2 ON prcp2.departamento_id = dcp2.id
-                LEFT JOIN departamentos dalt2 ON pralt2.departamento_id = dalt2.id
-                WHERE p.escenario_id = ?
-                AND p.tipo = 'INU_CP'
-                AND p.nivel_exposicion_2_inu = pla.nivel_exposicion_2_inu
-                GROUP BY COALESCE(dcp2.nombre, dalt2.nombre)
-                HAVING SUM(p.poblacion) > 0
-                ORDER BY SUM(p.poblacion) DESC
-                LIMIT 3
-            ) dep
-        ) AS departamentos_poblacion
-    ", [$escenario->id])
-    ->groupBy('pla.nivel_exposicion_2_inu')
-    ->orderByRaw("
-        CASE UPPER(pla.nivel_exposicion_2_inu)
-            WHEN 'MUY ALTO' THEN 1
-            WHEN 'ALTO' THEN 2
-            WHEN 'MEDIO' THEN 3
-            WHEN 'BAJO' THEN 4
-            WHEN 'MUY BAJO' THEN 5
-            ELSE 6
-        END
-    ")
-    ->get();
-
-        $inundacionesDepartamentos = (clone $inundacionesBase)
-            ->where('pla.tipo', 'INU_CP')
+            ->whereNotNull('pla.nivel_exposicion_2_inu')
             ->selectRaw("
                 pla.nivel_exposicion_2_inu AS nivel,
-                COALESCE(d_cp.nombre, d_alt.nombre) AS departamento,
-                SUM(pla.poblacion) AS total_poblacion
-            ")
-            ->groupByRaw("pla.nivel_exposicion_2_inu, COALESCE(d_cp.nombre, d_alt.nombre)")
-            ->havingRaw("SUM(pla.poblacion) > 0")
+                SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
+                SUM(CASE WHEN pla.tipo = 'INU_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
+                COUNT(CASE WHEN pla.tipo = 'INU_CP' THEN 1 END) AS total_centro_poblado,
+                COUNT(CASE WHEN pla.tipo = 'INU_ES' THEN 1 END) AS total_est_salud,
+                COUNT(CASE WHEN pla.tipo = 'INU_IE' THEN 1 END) AS total_inst_educativa,
+                ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'INU_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
+                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'INU_CP'
+                        AND p.nivel_exposicion_2_inu = pla.nivel_exposicion_2_inu
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
+            ->groupBy('pla.nivel_exposicion_2_inu')
             ->orderByRaw("
                 CASE UPPER(pla.nivel_exposicion_2_inu)
                     WHEN 'MUY ALTO' THEN 1
@@ -184,18 +118,20 @@ $inundaciones = DB::table('plantilla_a as pla')
                     ELSE 6
                 END
             ")
-            ->orderByDesc('total_poblacion')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
 
-        // moviemineto en masa
-        $movimeintoMasaBase = DB::table('plantilla_a as pla')
+        $movimientoMasa = DB::table('plantilla_a as pla')
             ->leftJoin('distritos as dr', 'pla.cod_ubigeo', '=', 'dr.codigo')
             ->leftJoin('provincias as pr', 'dr.provincia_id', '=', 'pr.id')
             ->leftJoin('departamentos as d', 'pr.departamento_id', '=', 'd.id')
+            ->where('pla.tipo', 'AM_MM')
             ->where('pla.escenario_id', $escenario->id)
-            ->where('pla.tipo', 'AM_MM');
-
-        $movimientoMasa = (clone $movimeintoMasaBase)
+            ->whereNotNull('pla.nivel_riesgo')
             ->selectRaw("
                 pla.nivel_riesgo AS nivel,
                 SUM(pla.poblacion) AS total_poblacion,
@@ -203,9 +139,26 @@ $inundaciones = DB::table('plantilla_a as pla')
                 SUM(pla.es) AS total_est_salud,
                 SUM(pla.ie) AS total_inst_educativa,
                 COUNT(DISTINCT dr.id) AS total_distritos,
-                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
-            ")
-            ->whereNotNull('pla.nivel_riesgo')
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN distritos dr2 ON p.cod_ubigeo = dr2.codigo
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'AM_MM'
+                        AND p.nivel_riesgo = pla.nivel_riesgo
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
             ->groupBy('pla.nivel_riesgo')
             ->orderByRaw("
                 CASE UPPER(pla.nivel_riesgo)
@@ -217,28 +170,12 @@ $inundaciones = DB::table('plantilla_a as pla')
                     ELSE 6
                 END
             ")
-            ->get();
-
-        $movimeintoMasaDepartamentos = (clone $movimeintoMasaBase)
-            ->selectRaw("
-                pla.nivel_riesgo AS nivel,
-                COALESCE(d.nombre) AS departamento,
-                SUM(pla.poblacion) AS total_poblacion
-            ")
-            ->groupByRaw("pla.nivel_riesgo, COALESCE(d.nombre)")
-            ->havingRaw("SUM(pla.poblacion) > 0")
-            ->orderByRaw("
-                CASE UPPER(pla.nivel_riesgo)
-                    WHEN 'MUY ALTO' THEN 1
-                    WHEN 'ALTO' THEN 2
-                    WHEN 'MEDIO' THEN 3
-                    WHEN 'BAJO' THEN 4
-                    WHEN 'MUY BAJO' THEN 5
-                    ELSE 6
-                END
-            ")
-            ->orderByDesc('total_poblacion')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
 
         return [
             'inundaciones' => $inundaciones,
@@ -251,15 +188,34 @@ $inundaciones = DB::table('plantilla_a as pla')
         // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
             ->where('pla.escenario_id', $escenario->id)
+            ->whereNotNull('pla.nivel_exposicion_2_inu')
             ->selectRaw("
                 pla.nivel_exposicion_2_inu AS nivel,
                 SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
                 SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN 1 END) AS total_centro_poblado,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_ES' THEN 1 END) AS total_est_salud,
-                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa
-            ")
-            ->whereNotNull('pla.nivel_exposicion_2_inu')
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
+                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'TRI_LLUVIAS_CP'
+                        AND p.nivel_exposicion_2_inu = pla.nivel_exposicion_2_inu
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
             ->groupBy('pla.nivel_exposicion_2_inu')
             ->orderByRaw("
                 CASE UPPER(pla.nivel_exposicion_2_inu)
@@ -271,19 +227,43 @@ $inundaciones = DB::table('plantilla_a as pla')
                     ELSE 6
                 END
             ")
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
 
         $movimiento_masa = DB::table('plantilla_a as pla')
             ->where('pla.escenario_id', $escenario->id)
+            ->whereNotNull('pla.nivel_exposicion_1_mm')
             ->selectRaw("
                 pla.nivel_exposicion_1_mm AS nivel,
                 SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
                 SUM(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN 1 END) AS total_centro_poblado,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_ES' THEN 1 END) AS total_est_salud,
-                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa
-            ")
-            ->whereNotNull('pla.nivel_exposicion_1_mm')
+                COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
+                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'TRI_LLUVIAS_CP'
+                        AND p.nivel_exposicion_1_mm = pla.nivel_exposicion_1_mm
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
             ->groupBy('pla.nivel_exposicion_1_mm')
             ->orderByRaw("
                 CASE UPPER(pla.nivel_exposicion_1_mm)
@@ -295,8 +275,12 @@ $inundaciones = DB::table('plantilla_a as pla')
                     ELSE 6
                 END
             ")
-            ->get();
-
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
 
         return [
             'inundaciones' => $inundaciones,
@@ -376,21 +360,38 @@ $inundaciones = DB::table('plantilla_a as pla')
 
     public static function getByFormularioBajasTempAvisoMeteorologico(Escenario $escenario)
     {
-        // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
             ->leftJoin('distritos as dr', 'pla.cod_ubigeo', '=', 'dr.codigo')
             ->leftJoin('provincias as pr', 'dr.provincia_id', '=', 'pr.id')
             ->leftJoin('departamentos as d', 'pr.departamento_id', '=', 'd.id')
             ->where('pla.escenario_id', $escenario->id)
             ->where('pla.tipo', 'AM_DT')
+            ->whereNotNull('pla.nivel_riesgo')
             ->selectRaw("
                 pla.nivel_riesgo AS nivel,
                 SUM(pla.poblacion) AS total_poblacion,
                 SUM(pla.vivienda) AS total_vivienda,
                 COUNT(DISTINCT dr.id) AS total_distritos,
-                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
-            ")
-            ->whereNotNull('pla.nivel_riesgo')
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN distritos dr2 ON p.cod_ubigeo = dr2.codigo
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'AM_DT'
+                        AND p.nivel_riesgo = pla.nivel_riesgo
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
             ->groupBy('pla.nivel_riesgo')
             ->orderByRaw("
                 CASE UPPER(pla.nivel_riesgo)
@@ -402,7 +403,12 @@ $inundaciones = DB::table('plantilla_a as pla')
                     ELSE 6
                 END
             ")
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
 
         return [
             'inundaciones' => $inundaciones,

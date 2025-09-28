@@ -7,6 +7,7 @@ use App\Http\Requests\EscenarioStoreRequest;
 use App\Imports\EscenarioImport;
 use App\Models\Escenario;
 use App\Models\Formulario;
+use App\Models\Mapa;
 use App\Models\PlantillaA;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -41,26 +42,45 @@ class EscenarioController extends Controller
 
     public function show(Escenario $escenario)
     {
-
         // $data = PlantillaA::getByFormularioAvisoMeteorologico($escenario);
         $data = Escenario::getByFormulario($escenario);
 
         return response()->json([
-            'escenario' => $escenario->load('formulario'),
+            'escenario' => $escenario->load(['formulario', 'mapas']),
             'plantillas' => $data,
         ]);
     }
 
     public function store(EscenarioStoreRequest $request)
     {
+        $imagenMapas = [
+            'mapa_derecho',
+            'mapa_centro',
+            'mapa_izquierdo',
+            'mapa_izquierdo_superior',
+            'mapa_izquierdo_inferior',
+        ];
+
         $data = $request->validated();
-        $escenario = DB::transaction(function () use ($request, $data) {
+        $escenario = DB::transaction(function () use ($request, $data, $imagenMapas) {
             $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
             $data['excel'] = $this->storeFile($request->file('excel'));
-            $data['mapa_centro'] = $this->storeFile($request->file('mapa_centro'), 'public');
-            $data['mapa_izquierdo'] = $this->storeFile($request->file('mapa_izquierdo'), 'public');
-            $data['mapa_derecho'] = $this->storeFile($request->file('mapa_derecho'), 'public');
-            return Escenario::create($data);
+            $escenarioData = Escenario::create($data);
+
+            foreach ($imagenMapas as $campo) {
+                if ($request->hasFile($campo)) {
+                    foreach ($request->file($campo) as $file) {
+                        $ruta = $this->storeFile($file, 'public');
+                        Mapa::create([
+                            'escenario_id' => $escenarioData->id,
+                            'tipo' => $campo, // << Agrega un campo "tipo" para identificar el mapa
+                            'ruta' => $ruta,  // Asegúrate de tener un campo "ruta" en la tabla
+                        ]);
+                    }
+                }
+            }
+
+            return $escenarioData;
         });
 
         // procesar la plantilla
@@ -73,6 +93,14 @@ class EscenarioController extends Controller
 
     public function update(EscenarioStoreRequest $request, Escenario $escenario)
     {
+        $imagenMapas = [
+            'mapa_derecho',
+            'mapa_centro',
+            'mapa_izquierdo',
+            'mapa_izquierdo_superior',
+            'mapa_izquierdo_inferior',
+        ];
+
         $data = $request->validated();
 
         if ($request->file('plantilla')) {
@@ -93,32 +121,28 @@ class EscenarioController extends Controller
             $data['excel'] = $urlExcel;
         }
 
-        if ($request->file('mapa_centro')) {
-            $urlMapaCentro = $this->storeFile($request->file('mapa_centro'), 'public');
-            if (!empty($escenario->mapa_centro)) {
-                $this->deleteFile($escenario->mapa_centro, 'public');
-            }
-            $data['mapa_centro'] = $urlMapaCentro;
-        }
-
-        if ($request->file('mapa_izquierdo')) {
-            $urlMapaIzquierdo = $this->storeFile($request->file('mapa_izquierdo'), 'public');
-            if (!empty($escenario->mapa_izquierdo)) {
-                $this->deleteFile($escenario->mapa_izquierdo, 'public');
-            }
-            $data['mapa_izquierdo'] = $urlMapaIzquierdo;
-        }
-
-        if ($request->file('mapa_derecho')) {
-            $urlMapaDerecho = $this->storeFile($request->file('mapa_derecho'), 'public');
-            if (!empty($escenario->mapa_derecho)) {
-                $this->deleteFile($escenario->mapa_derecho, 'public');
-            }
-            $data['mapa_derecho'] = $urlMapaDerecho;
-        }
-
-        DB::transaction(function () use ($request, $escenario, $data) {
+        DB::transaction(function () use ($request, $escenario, $data, $imagenMapas) {
             $escenario->update($data);
+
+            foreach ($imagenMapas as $tipo) {
+                if ($request->hasFile($tipo)) {
+                    $imagenesAntiguas = $escenario->mapas()->where('tipo', $tipo)->get();
+
+                    foreach ($imagenesAntiguas as $imagen) {
+                        $this->deleteFile($imagen->ruta, 'public');
+                        $imagen->delete();
+                    }
+
+                    foreach ($request->file($tipo) as $file) {
+                        $ruta = $this->storeFile($file, 'public');
+
+                        $escenario->mapas()->create([
+                            'tipo' => $tipo,
+                            'ruta' => $ruta,
+                        ]);
+                    }
+                }
+            }
         });
 
         return response()->json(['message' => 'Escenario actualizado correctamente!']);
@@ -157,6 +181,7 @@ class EscenarioController extends Controller
         if (null === $file) {
             return "";
         }
+
         $timestamp = now()->timestamp;
         $filename = $timestamp . '-' . $file->getClientOriginalName();
         return $file->storeAs('escenarios', $filename, "$acceso");

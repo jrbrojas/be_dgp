@@ -22,9 +22,6 @@ class Escenario extends Model
         'url_base',
         'plantilla_subida',
         'excel',
-        'mapa_centro',
-        'mapa_izquierdo',
-        'mapa_derecho',
     ];
 
     protected function casts(): array
@@ -62,6 +59,11 @@ class Escenario extends Model
     public function plantillasB()
     {
         return $this->hasMany(PlantillaB::class);
+    }
+
+    public function mapas()
+    {
+        return $this->hasMany(Mapa::class);
     }
 
     public static function getByFormulario(Escenario $escenario)

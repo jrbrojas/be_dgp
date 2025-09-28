@@ -23,9 +23,6 @@ return new class extends Migration
             $table->string('url_base');
             $table->string('plantilla_subida')->nullable();
             $table->string('excel')->nullable();
-            $table->string('mapa_centro')->nullable();
-            $table->string('mapa_izquierdo')->nullable();
-            $table->string('mapa_derecho')->nullable();
             $table->timestamps();
         });
     }
