@@ -16,9 +16,11 @@ use Illuminate\Support\Facades\Route;
 Route::post('/v1/login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
+
     // escenarios
     Route::get('escenarios/formularios', [EscenarioController::class, 'formulariosFull']);
     Route::apiResource('/escenarios', EscenarioController::class);
+    Route::post('escenarios/{escenario}/plantilla/print', [EscenarioController::class, 'print']);
     Route::post('escenarios/{escenario}/plantilla/download', [EscenarioController::class, 'downloadPlantilla']);
 
     // formularios

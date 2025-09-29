@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ExcelImportCompleted;
 use App\Exports\PlantillaExport;
 use App\Http\Requests\EscenarioStoreRequest;
 use App\Imports\EscenarioImport;
 use App\Models\Escenario;
 use App\Models\Formulario;
 use App\Models\Mapa;
-use App\Models\PlantillaA;
+use App\Support\CopyImporterPlantillaA;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Browsershot\Browsershot;
 
 class EscenarioController extends Controller
 {
@@ -85,7 +88,24 @@ class EscenarioController extends Controller
 
         // procesar la plantilla
         if ($request->file('plantilla')) {
+
             Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
+            // $storedRelPath = $escenario->plantilla_subida; // lo que retorna storeFile (p.ej. "imports/xxxx.csv|xlsx")
+            // $absPath = Storage::disk('local')->path($storedRelPath);
+
+            // DB::beginTransaction();
+            // try {
+            //     // COPY -> staging, luego INSERT ... SELECT -> final
+            //     CopyImporterPlantillaA::importCsvToPlantillaA($absPath, $escenario->id);
+            //     DB::commit();
+            // } catch (\Throwable $e) {
+            //     DB::rollBack();
+            //     // Si hiciste un CSV temporal, puedes limpiarlo aquí
+            //     throw $e;
+            // }
+
+            // // Dispara tu evento como en AfterImport
+            // event(new ExcelImportCompleted($escenario->id));
         }
 
         return response()->json(['message' => 'Escenario creado correctamente!']);
@@ -198,5 +218,22 @@ class EscenarioController extends Controller
     {
         $data = $request->input('data', []);
         return Excel::download(new PlantillaExport($data), "plantilla_$escenario->id.xlsx");
+    }
+
+    public function print(Request $request, Escenario $escenario)
+    {
+        $escenario->load(['formulario', 'mapas']);
+        $data = $request->input('plantillasAList', []);
+        $css = file_get_contents(public_path('build/assets/app-B3On5526.css')); // cambiar segun el nombre del css en public
+        $html = view('pdf.escenario', compact('escenario', 'data', 'css'))->render();
+
+        // return Browsershot::html($html)
+        //     ->format('A4')
+        //     ->landscape()
+        //     ->margins(10, 10, 10, 10)
+        //     ->waitUntilNetworkIdle()
+        //     ->pdf(); // <-- Retorna el binario directamente
+        $pdf = Pdf::loadView('pdf.escenario', compact('data', 'escenario', 'css'))->setPaper('a4', 'landscape');
+        return $pdf->download('escenario.pdf');
     }
 }
