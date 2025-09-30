@@ -33,3 +33,11 @@ Para probar el servidor, debe ejecutar:
 ```bash
 $ php artisan serve
 ```
+
+### 5. Publicas las imagenes de los mapas para los escenarios
+Debe ejecutar:
+
+```bash
+$ php artisan storage:link
+```
+
