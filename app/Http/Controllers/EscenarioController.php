@@ -57,10 +57,10 @@ class EscenarioController extends Controller
     public function showPI(Request $request)
     {
         $escenario = Escenario::where('formulario_id', $request->formulario)->orderBy('id', 'desc')->first();
-        $data = Escenario::getByFormulario($escenario);
+        $data = $escenario ? Escenario::getByFormulario($escenario) : [];
 
         return response()->json([
-            'escenario' => $escenario->load(['formulario', 'mapas']),
+            'escenario' => $escenario ? $escenario->load(['formulario', 'mapas']) : null,
             'plantillas' => $data,
         ]);
     }
