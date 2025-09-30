@@ -54,6 +54,17 @@ class EscenarioController extends Controller
         ]);
     }
 
+    public function showPI(Request $request)
+    {
+        $escenario = Escenario::where('formulario_id', $request->formulario)->orderBy('id', 'desc')->first();
+        $data = Escenario::getByFormulario($escenario);
+
+        return response()->json([
+            'escenario' => $escenario->load(['formulario', 'mapas']),
+            'plantillas' => $data,
+        ]);
+    }
+
     public function store(EscenarioStoreRequest $request)
     {
         $imagenMapas = [
@@ -164,6 +175,7 @@ class EscenarioController extends Controller
 
         return response()->json(['message' => 'Escenario actualizado correctamente!']);
     }
+
     public function destroy(Request $request, Escenario $escenario)
     {
         return DB::transaction(function () use ($escenario) {

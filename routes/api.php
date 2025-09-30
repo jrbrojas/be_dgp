@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/v1/login', [AuthController::class, 'login']);
 
+Route::get('v1/escenarios/show/{formulario}/pi', [EscenarioController::class, 'showPI']);
+
 Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
 
     // escenarios
