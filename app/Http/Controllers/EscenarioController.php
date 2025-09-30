@@ -224,7 +224,8 @@ class EscenarioController extends Controller
     {
         $escenario->load(['formulario', 'mapas']);
         $data = $request->input('plantillasAList', []);
-        $css = file_get_contents(public_path('build/assets/app-B3On5526.css')); // cambiar segun el nombre del css en public
+        //$css = file_get_contents(public_path('build/assets/app-B3On5526.css')); // cambiar segun el nombre del css en public
+        $css = "";
         $html = view('pdf.escenario', compact('escenario', 'data', 'css'))->render();
 
         // return Browsershot::html($html)
