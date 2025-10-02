@@ -10,6 +10,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    protected $connection = 'pgsql';
+
     public function up(): void
     {
         DB::statement('DROP TABLE IF EXISTS plantilla_a_staging');
