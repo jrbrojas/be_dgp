@@ -10,7 +10,6 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    protected $connection = 'pgsql';
 
     public function up(): void
     {
