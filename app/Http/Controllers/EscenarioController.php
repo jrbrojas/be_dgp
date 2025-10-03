@@ -122,9 +122,9 @@ class EscenarioController extends Controller
 
         if ($request->file('excel')) {
             $urlExcel = $this->storeFile($request->file('excel'));
-            if (!empty($escenario->excel)) {
-                $this->deleteFile($escenario->excel);
-            }
+            // if (!empty($escenario->excel)) {
+            //     $this->deleteFile($escenario->excel);
+            // }
             $data['excel'] = $urlExcel;
         }
 
