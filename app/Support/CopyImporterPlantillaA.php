@@ -9,7 +9,7 @@ class CopyImporterPlantillaA
 {
     public static function importCsvToPlantillaA(string $csvAbsolutePath, int $escenarioId): void
     {
-        $csvAbs = Storage::disk('public')->path($csvAbsolutePath);
+        $csvAbs = Storage::disk('local')->path($csvAbsolutePath);
 
         DB::beginTransaction();
         try {

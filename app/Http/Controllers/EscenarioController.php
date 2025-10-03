@@ -140,7 +140,7 @@ class EscenarioController extends Controller
                 $escenario->update($data);
                 // se elimina la data anterior de plantilla
                 $escenario->plantillasA()->delete();
-                // CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
+                CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
                 DB::commit();
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -204,10 +204,7 @@ class EscenarioController extends Controller
         if (null === $file) {
             return "";
         }
-
-        $timestamp = now()->timestamp;
-        $filename = $timestamp . '-' . $file->getClientOriginalName();
-        return Storage::disk('public')->putFile('escenarios', $file);
+        return Storage::disk($acceso)->putFile('escenarios', $file);
     }
 
     public function deleteFile(string $path, string $acceso = 'local')
