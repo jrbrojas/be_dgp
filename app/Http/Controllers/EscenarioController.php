@@ -207,7 +207,7 @@ class EscenarioController extends Controller
 
         $timestamp = now()->timestamp;
         $filename = $timestamp . '-' . $file->getClientOriginalName();
-        return Storage::disk('local')->put('escenarios', file_get_contents($file), $filename);
+        return Storage::disk('public')->putFileAs('escenarios', $file, $filename);
     }
 
     public function deleteFile(string $path, string $acceso = 'local')
