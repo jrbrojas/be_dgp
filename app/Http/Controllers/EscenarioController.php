@@ -128,30 +128,30 @@ class EscenarioController extends Controller
             $data['excel'] = $urlExcel;
         }
 
-        if ($request->file('plantilla')) {
+        // if ($request->file('plantilla')) {
 
-            // 1) guardar nuevo archivo y eliminar el anterior
-            $nuevoRelPath = $this->storeFile($request->file('plantilla'));
-            if (!empty($escenario->plantilla_subida)) {
-                $this->deleteFile($escenario->plantilla_subida);
-            }
-            $data['plantilla_subida'] = $nuevoRelPath;
+        //     // 1) guardar nuevo archivo y eliminar el anterior
+        //     $nuevoRelPath = $this->storeFile($request->file('plantilla'));
+        //     if (!empty($escenario->plantilla_subida)) {
+        //         $this->deleteFile($escenario->plantilla_subida);
+        //     }
+        //     $data['plantilla_subida'] = $nuevoRelPath;
 
-            DB::beginTransaction();
-            try {
-                $escenario->update($data);
-                // se elimina la data anterior de plantilla
-                $escenario->plantillasA()->delete();
-                CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
-                DB::commit();
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            }
+        //     DB::beginTransaction();
+        //     try {
+        //         $escenario->update($data);
+        //         // se elimina la data anterior de plantilla
+        //         $escenario->plantillasA()->delete();
+        //         CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
+        //         DB::commit();
+        //     } catch (\Throwable $e) {
+        //         DB::rollBack();
+        //         throw $e;
+        //     }
 
-        } else {
-            $escenario->update($data);
-        }
+        // } else {
+        //     $escenario->update($data);
+        // }
 
         // foreach ($imagenMapas as $tipo) {
         //     if ($request->hasFile($tipo)) {
