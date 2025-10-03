@@ -121,11 +121,11 @@ class EscenarioController extends Controller
         $data = $request->validated();
 
         if ($request->file('excel')) {
-            // $urlExcel = $this->storeFile($request->file('excel'));
+            $urlExcel = $this->storeFile($request->file('excel'));
             if (!empty($escenario->excel)) {
                 $this->deleteFile($escenario->excel);
             }
-            // $data['excel'] = $urlExcel;
+            $data['excel'] = $urlExcel;
         }
 
         // if ($request->file('plantilla')) {
@@ -209,7 +209,7 @@ class EscenarioController extends Controller
 
         $timestamp = now()->timestamp;
         $filename = $timestamp . '-' . $file->getClientOriginalName();
-        return $file->storeAs('escenarios', $filename, "$acceso");
+        return Storage::putFileAs('escenarios', $file, $filename, "$acceso");
     }
 
     public function deleteFile(string $path, string $acceso = 'local')
