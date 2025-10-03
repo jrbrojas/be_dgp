@@ -1,4 +1,4 @@
-## Forma de iniciar el proyecto backend - DGP
+## Forma de iniciar el proyecto backend - Plataforma Integradora (CENEPRED)
 
 ### 1. Instalar dependencias de composer
 
@@ -8,11 +8,24 @@ $ composer install
 
 ### 2. Copiar archivo de entorno
 
+Ambiente de desarrollo
+
 ```bash
-$ cp .env.example .env
+$ cp .env.dev .env
+```
+Ambiente de calidad
+
+```bash
+$ cp .env.qa .env
 ```
 
-### 3. Copiar archivo de entorno
+Ambiente de produccion
+
+```bash
+$ cp .env.prod .env
+```
+
+### 3. Generar llave de proyecto
 
 ```bash
 $ php artisan key:generate
@@ -22,6 +35,14 @@ $ php artisan key:generate
 El proyecto se puede construir con las migraciones de Laravel, por lo que es
 independiente del motor de base de datos que se esté utilzando. Como primer
 comando se debe ejecutar:
+
+Si lo levantas por primera vez:
+
+```bash
+$ php artisan migrate --seed
+```
+
+Si lo levantas posterior:
 
 ```bash
 $ php artisan migrate:fresh --seed
@@ -33,11 +54,8 @@ Para probar el servidor, debe ejecutar:
 ```bash
 $ php artisan serve
 ```
-
-### 5. Publicas las imagenes de los mapas para los escenarios
-Debe ejecutar:
+si es con un puerto como el 8003, ejecutas el siguiente comando
 
 ```bash
-$ php artisan storage:link
+php artisan serve --port=8003
 ```
-

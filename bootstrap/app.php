@@ -25,9 +25,5 @@ $app = Application::configure(basePath: $basePath)
 if (file_exists($basePath.'/.env')) {
     Dotenv::createMutable($basePath)->load();
 }
-$externalPath = $basePath.'/../.env';
-if (file_exists($externalPath)) {
-    Dotenv::createMutable(dirname($externalPath), basename($externalPath))->load();
-}
 
 return $app->create();
