@@ -140,7 +140,7 @@ class EscenarioController extends Controller
                 $escenario->update($data);
                 // se elimina la data anterior de plantilla
                 $escenario->plantillasA()->delete();
-                CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
+                // CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
                 DB::commit();
             } catch (\Throwable $e) {
                 DB::rollBack();
