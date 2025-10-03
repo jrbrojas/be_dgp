@@ -77,33 +77,33 @@ class EscenarioController extends Controller
 
         $data = $request->validated();
         $escenario = DB::transaction(function () use ($request, $data, $imagenMapas) {
-            $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
-            $data['excel'] = $this->storeFile($request->file('excel'));
+            // $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
+            // $data['excel'] = $this->storeFile($request->file('excel'));
             $escenarioData = Escenario::create($data);
 
-            foreach ($imagenMapas as $campo) {
-                if ($request->hasFile($campo)) {
-                    foreach ($request->file($campo) as $file) {
-                        $ruta = $this->storeFile($file, 'public');
-                        Mapa::create([
-                            'escenario_id' => $escenarioData->id,
-                            'tipo' => $campo, // << Agrega un campo "tipo" para identificar el mapa
-                            'ruta' => $ruta,  // Asegúrate de tener un campo "ruta" en la tabla
-                        ]);
-                    }
-                }
-            }
+            // foreach ($imagenMapas as $campo) {
+            //     if ($request->hasFile($campo)) {
+            //         foreach ($request->file($campo) as $file) {
+            //             $ruta = $this->storeFile($file, 'public');
+            //             Mapa::create([
+            //                 'escenario_id' => $escenarioData->id,
+            //                 'tipo' => $campo, // << Agrega un campo "tipo" para identificar el mapa
+            //                 'ruta' => $ruta,  // Asegúrate de tener un campo "ruta" en la tabla
+            //             ]);
+            //         }
+            //     }
+            // }
 
             return $escenarioData;
         });
 
         // procesar la plantilla
-        if ($request->file('plantilla')) {
+        // if ($request->file('plantilla')) {
 
-            // Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
-            $storedRelPath = $escenario->plantilla_subida; // lo que retorna storeFile (p.ej. "imports/xxxx.csv|xlsx")
-            CopyImporterPlantillaA::importCsvToPlantillaA($storedRelPath, $escenario->id);
-        }
+        //     // Excel::queueImport(new EscenarioImport($escenario->id), $request->file('plantilla'));
+        //     $storedRelPath = $escenario->plantilla_subida; // lo que retorna storeFile (p.ej. "imports/xxxx.csv|xlsx")
+        //     CopyImporterPlantillaA::importCsvToPlantillaA($storedRelPath, $escenario->id);
+        // }
 
         return response()->json(['message' => 'Escenario creado correctamente!']);
     }
@@ -120,59 +120,60 @@ class EscenarioController extends Controller
 
         $data = $request->validated();
 
-        if ($request->file('excel')) {
-            $urlExcel = $this->storeFile($request->file('excel'));
-            if (!empty($escenario->excel)) {
-                $this->deleteFile($escenario->excel);
-            }
-            $data['excel'] = $urlExcel;
-        }
+        // if ($request->file('excel')) {
+        //     $urlExcel = $this->storeFile($request->file('excel'));
+        //     if (!empty($escenario->excel)) {
+        //         $this->deleteFile($escenario->excel);
+        //     }
+        //     $data['excel'] = $urlExcel;
+        // }
 
-        if ($request->file('plantilla')) {
-            // 1) guardar nuevo archivo y eliminar el anterior
-            $nuevoRelPath = $this->storeFile($request->file('plantilla')); // p.ej. "imports/archivo.csv"
-            if (!empty($escenario->plantilla_subida)) {
-                $this->deleteFile($escenario->plantilla_subida);
-            }
-            $data['plantilla_subida'] = $nuevoRelPath;
+        // if ($request->file('plantilla')) {
+        //     // 1) guardar nuevo archivo y eliminar el anterior
+        //     $nuevoRelPath = $this->storeFile($request->file('plantilla')); // p.ej. "imports/archivo.csv"
+        //     if (!empty($escenario->plantilla_subida)) {
+        //         $this->deleteFile($escenario->plantilla_subida);
+        //     }
+        //     $data['plantilla_subida'] = $nuevoRelPath;
 
-            // 2) reemplazar las filas del escenario en plantilla_a y recargar desde CSV
-            DB::beginTransaction();
-            try {
-                $escenario->update($data);
-                // se elimina la data anterior de plantilla
-                $escenario->plantillasA()->delete();
-                CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
-                DB::commit();
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            }
+        //     // 2) reemplazar las filas del escenario en plantilla_a y recargar desde CSV
+        //     DB::beginTransaction();
+        //     try {
+        //         $escenario->update($data);
+        //         // se elimina la data anterior de plantilla
+        //         $escenario->plantillasA()->delete();
+        //         CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
+        //         DB::commit();
+        //     } catch (\Throwable $e) {
+        //         DB::rollBack();
+        //         throw $e;
+        //     }
 
-            // dispara tu evento al terminar
-            // event(new ExcelImportCompleted($escenario->id));
-        } else {
-            $escenario->update($data);
-        }
+        //     // dispara tu evento al terminar
+        //     // event(new ExcelImportCompleted($escenario->id));
+        // } else {
+        //     $escenario->update($data);
+        // }
 
         // === imágenes (igual que antes) ===
-        foreach ($imagenMapas as $tipo) {
-            if ($request->hasFile($tipo)) {
-                $imagenesAntiguas = $escenario->mapas()->where('tipo', $tipo)->get();
-                foreach ($imagenesAntiguas as $imagen) {
-                    $this->deleteFile($imagen->ruta, 'public');
-                    $imagen->delete();
-                }
-                foreach ($request->file($tipo) as $file) {
-                    $ruta = $this->storeFile($file, 'public');
-                    $escenario->mapas()->create([
-                        'tipo' => $tipo,
-                        'ruta' => $ruta,
-                    ]);
-                }
-            }
-        }
+        // foreach ($imagenMapas as $tipo) {
+        //     if ($request->hasFile($tipo)) {
+        //         $imagenesAntiguas = $escenario->mapas()->where('tipo', $tipo)->get();
+        //         foreach ($imagenesAntiguas as $imagen) {
+        //             $this->deleteFile($imagen->ruta, 'public');
+        //             $imagen->delete();
+        //         }
+        //         foreach ($request->file($tipo) as $file) {
+        //             $ruta = $this->storeFile($file, 'public');
+        //             $escenario->mapas()->create([
+        //                 'tipo' => $tipo,
+        //                 'ruta' => $ruta,
+        //             ]);
+        //         }
+        //     }
+        // }
 
+        $escenario->update($data);
         return response()->json(['message' => 'Escenario actualizado correctamente!']);
     }
 
