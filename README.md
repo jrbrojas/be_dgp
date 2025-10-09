@@ -54,8 +54,8 @@ Para probar el servidor, debe ejecutar:
 ```bash
 $ php artisan serve
 ```
-si es con un puerto como el 8003, ejecutas el siguiente comando
+si es con un puerto del .env, ejecutas el siguiente comando
 
 ```bash
-php artisan serve --port=8003
+$ php artisan serve --host=0.0.0.0 --port=$(grep APP_PORT .env | cut -d '=' -f2)
 ```
