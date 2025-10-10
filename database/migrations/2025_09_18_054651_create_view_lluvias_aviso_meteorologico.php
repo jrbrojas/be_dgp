@@ -13,8 +13,8 @@ return new class extends Migration
 
     public function up(): void
     {
-        DB::statement("
-            CREATE VIEW lluvias_aviso_meteorologico AS
+        DB::statement(
+            "CREATE VIEW lluvias_aviso_meteorologico AS
             SELECT
                 pla.*,
                 CASE WHEN pla.tipo = 'INU_CP' THEN d1.nombre ELSE d2.nombre END AS departamento,
@@ -33,8 +33,8 @@ return new class extends Migration
                 SELECT MAX(id)
                 FROM public.escenarios
                 WHERE formulario_id = 1
-            );
-        ");
+            );"
+        );
     }
 
     /**
