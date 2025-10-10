@@ -35,7 +35,7 @@ class CopyImporterPlantillaA
               alumnos, docentes, vias, superficie_agricola, pob_5, pob_60, pob_urb, pob_rural,
               viv_tipo1, viv_tipo2, viv_tipo3, viv_tipo4, viv_tipo5, hogares, sa_riego, sa_secano,
               prod_agropecuarios, prod_agropecuarios_65, superficie_de_pastos, alpacas, ovinos, vacunos,
-              areas_naturales, nivel_sequia
+              areas_naturales, nivel_sequia, created_at, updated_at
             )
             SELECT
               :escenario_id,
@@ -77,7 +77,9 @@ class CopyImporterPlantillaA
               COALESCE(NULLIF(ovinos,'')::int, 0),
               COALESCE(NULLIF(vacunos,'')::int, 0),
               COALESCE(NULLIF(areas_naturales,'')::int, 0),
-              nivel_sequia
+              nivel_sequia,
+              NOW(),
+              NOW()
             FROM plantilla_a_staging
         ", ['escenario_id' => $escenarioId]);
 
