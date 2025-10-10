@@ -1,4 +1,5 @@
 *
+!private/
 !private/seeders
 !public/
 !.gitignore
