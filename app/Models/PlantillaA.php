@@ -62,6 +62,7 @@ class PlantillaA extends Model
         'superficie_de_pastos' => 'decimal:8,2',
     ];
 
+    // formulario 1
     public static function getByFormularioAvisoMeteorologico(Escenario $escenario)
     {
 
@@ -183,9 +184,9 @@ class PlantillaA extends Model
         ];
     }
 
+    // formulario 2
     public static function getByFormularioAvisoTrimestral(Escenario $escenario)
     {
-        // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
             ->where('pla.escenario_id', $escenario->id)
             ->whereNotNull('pla.nivel_exposicion_2_inu')
@@ -288,6 +289,7 @@ class PlantillaA extends Model
         ];
     }
 
+    // formualario 3
     public static function getByFormularioInformacionClimatica(Escenario $escenario)
     {
         // solo para formulario Lluvias Meteorologico
@@ -358,6 +360,7 @@ class PlantillaA extends Model
         ];
     }
 
+    // formulario 4
     public static function getByFormularioBajasTempAvisoMeteorologico(Escenario $escenario)
     {
         $inundaciones = DB::table('plantilla_a as pla')
@@ -400,6 +403,246 @@ class PlantillaA extends Model
                     WHEN 'M' THEN 3
                     WHEN 'B' THEN 4
                     WHEN 'MB' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
+
+        return [
+            'inundaciones' => $inundaciones,
+        ];
+    }
+
+    // formulario 5
+    public static function getByFormularioBajasTempAvisoTrimestral(Escenario $escenario)
+    {
+        // solo para formulario Lluvias Meteorologico
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->where('pla.escenario_id', $escenario->id)
+            ->whereNotNull('pla.nivel_exposicion_3_bt')
+            ->selectRaw("
+                pla.nivel_exposicion_3_bt AS nivel,
+                SUM(CASE WHEN pla.tipo = 'TRI_DT_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
+                SUM(CASE WHEN pla.tipo = 'TRI_DT_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
+                COUNT(CASE WHEN pla.tipo = 'TRI_DT_CP' THEN 1 END) AS total_centro_poblado,
+                COUNT(CASE WHEN pla.tipo = 'TRI_DT_ES' THEN 1 END) AS total_est_salud,
+                COUNT(CASE WHEN pla.tipo = 'TRI_DT_IE' THEN 1 END) AS total_inst_educativa,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
+                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'TRI_DT_CP'
+                        AND p.nivel_exposicion_3_bt = pla.nivel_exposicion_3_bt
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
+            ->groupBy('pla.nivel_exposicion_3_bt')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_exposicion_3_bt)
+                    WHEN 'MA' THEN 1
+                    WHEN 'A' THEN 2
+                    WHEN 'M' THEN 3
+                    WHEN 'B' THEN 4
+                    WHEN 'MB' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
+
+        return [
+            'inundaciones' => $inundaciones,
+        ];
+    }
+
+    // formulario 6
+    public static function getByFormularioBajasTempInformacionClimatica(Escenario $escenario)
+    {
+        // solo para formulario Lluvias Meteorologico
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->where('pla.escenario_id', $escenario->id)
+            ->whereNotNull('pla.nivel_riesgo')
+            ->where('pla.tipo', 'CLI_HEL_POB')
+            ->selectRaw("
+                pla.nivel_riesgo AS nivel,
+                SUM(pla.poblacion) AS total_poblacion,
+                SUM(pla.vivienda) AS total_vivienda,
+                COUNT(DISTINCT pla.cod_ubigeo) AS total_distritos,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN distritos dr2 ON p.cod_ubigeo = dr2.codigo
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'CLI_HEL_POB'
+                        AND p.nivel_riesgo = pla.nivel_riesgo
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
+            ->groupBy('pla.nivel_riesgo')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_riesgo)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
+
+        return [
+            'inundaciones' => $inundaciones,
+        ];
+    }
+
+    // formulario 7
+    public static function getByFormularioIncForestalesNacionales(Escenario $escenario)
+    {
+        // solo para formulario Lluvias Meteorologico
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->where('pla.escenario_id', $escenario->id)
+            ->whereNotNull('pla.nivel_riesgo')
+            ->selectRaw("
+                pla.nivel_riesgo AS nivel,
+                SUM(CASE WHEN pla.tipo = 'IF_NAC_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
+                SUM(CASE WHEN pla.tipo = 'IF_NAC_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
+                COUNT(CASE WHEN pla.tipo = 'IF_NAC_CP' THEN 1 END) AS total_centro_poblado,
+                COUNT(CASE WHEN pla.tipo = 'IF_NAC_ES' THEN 1 END) AS total_est_salud,
+                COUNT(CASE WHEN pla.tipo = 'IF_NAC_IE' THEN 1 END) AS total_inst_educativa,
+                SUM(CASE WHEN pla.tipo = 'IF_NAC_SAGRIC' THEN pla.superficie_agricola ELSE 0 END) AS total_superficie_agricola,
+                COUNT(CASE WHEN pla.tipo = 'IF_NAC_SARQ' THEN 1 END) AS total_mon_arqueologico,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
+                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'IF_NAC_CP'
+                        AND p.nivel_riesgo = pla.nivel_riesgo
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
+            ->groupBy('pla.nivel_riesgo')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_riesgo)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
+                    ELSE 6
+                END
+            ")
+            ->get()
+            ->map(function ($item) {
+                // Decodificar el JSON para que sea array y el front lo reciba ya listo
+                $item->departamentos_poblacion = json_decode($item->departamentos_poblacion, true);
+                return $item;
+            });
+
+        return [
+            'inundaciones' => $inundaciones,
+        ];
+    }
+
+    // formulario 8
+    public static function getByFormularioIncForestalesRegionales(Escenario $escenario)
+    {
+        $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('centro_poblados as cp', function ($join) {
+                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'IF_DEP_CP');
+            })
+            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_alt', function ($join) {
+                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'IF_DEP_CP');
+            })
+            ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
+            ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
+            ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
+            ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
+            ->where('pla.escenario_id', $escenario->id)
+            ->whereNotNull('pla.nivel_riesgo')
+            ->selectRaw("
+                pla.nivel_riesgo AS nivel,
+                SUM(CASE WHEN pla.tipo = 'IF_DEP_CP' THEN pla.poblacion ELSE 0 END) AS total_poblacion,
+                SUM(CASE WHEN pla.tipo = 'IF_DEP_CP' THEN pla.vivienda ELSE 0 END) AS total_vivienda,
+                COUNT(CASE WHEN pla.tipo = 'IF_DEP_CP' THEN 1 END) AS total_centro_poblado,
+                COUNT(CASE WHEN pla.tipo = 'IF_DEP_ES' THEN 1 END) AS total_est_salud,
+                COUNT(CASE WHEN pla.tipo = 'IF_DEP_IE' THEN 1 END) AS total_inst_educativa,
+                SUM(CASE WHEN pla.tipo = 'IF_DEP_SAGRIC' THEN pla.superficie_agricola ELSE 0 END) AS total_superficie_agricola,
+                ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'IF_DEP_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos,
+                (
+                    SELECT json_agg(dep)
+                    FROM (
+                        SELECT COALESCE(d2.nombre) AS departamento,
+                        SUM(p.poblacion) AS total_poblacion
+                        FROM plantilla_a p
+                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
+                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
+                        LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
+                        WHERE p.escenario_id = ?
+                        AND p.tipo = 'IF_DEP_CP'
+                        AND p.nivel_riesgo = pla.nivel_riesgo
+                        GROUP BY COALESCE(d2.nombre)
+                        HAVING SUM(p.poblacion) > 0
+                        ORDER BY SUM(p.poblacion) DESC
+                        LIMIT 3
+                    ) dep
+                ) AS departamentos_poblacion
+            ", [$escenario->id])
+            ->groupBy('pla.nivel_riesgo')
+            ->orderByRaw("
+                CASE UPPER(pla.nivel_riesgo)
+                    WHEN 'MUY ALTO' THEN 1
+                    WHEN 'ALTO' THEN 2
+                    WHEN 'MEDIO' THEN 3
+                    WHEN 'BAJO' THEN 4
+                    WHEN 'MUY BAJO' THEN 5
                     ELSE 6
                 END
             ")

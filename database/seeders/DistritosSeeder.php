@@ -15,7 +15,7 @@ class DistritosSeeder extends Seeder
      */
     public function run(): void
     {
-        $path = 'seeders/distritos.csv';
+        $path = 'distritos.csv';
         $file = Storage::disk('local')->path($path);
 
         if (!file_exists($file)) {

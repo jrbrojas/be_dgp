@@ -13,7 +13,7 @@ class DepartamentosSeeder extends Seeder
 
     public function run(): void
     {
-        $path = 'seeders/departamentos.csv';
+        $path = 'departamentos.csv';
         $file = Storage::disk('local')->path($path);
 
         if (!file_exists($file)) {

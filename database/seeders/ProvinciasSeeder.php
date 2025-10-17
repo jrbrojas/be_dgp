@@ -15,7 +15,7 @@ class ProvinciasSeeder extends Seeder
      */
     public function run(): void
     {
-        $path = 'seeders/provincias.csv';
+        $path = 'provincias.csv';
         $file = Storage::disk('local')->path($path);
 
         if (!file_exists($file)) {

@@ -82,16 +82,16 @@ class Escenario extends Model
                 return PlantillaA::getByFormularioBajasTempAvisoMeteorologico($escenario);
 
             case 5:
-                return PlantillaA::getByFormularioBajasTempTrimestral($escenario);
+                return PlantillaA::getByFormularioBajasTempAvisoTrimestral($escenario);
 
             case 6:
-                return PlantillaA::getByFormularioBajasTempClimatica($escenario);
+                return PlantillaA::getByFormularioBajasTempInformacionClimatica($escenario);
 
             case 7:
-                return PlantillaA::getByFormularioIncendiosNacional($escenario);
+                return PlantillaA::getByFormularioIncForestalesNacionales($escenario);
 
             case 8:
-                return PlantillaA::getByFormularioIncendiosRegional($escenario);
+                return PlantillaA::getByFormularioIncForestalesRegionales($escenario);
 
             case 9:
                 return PlantillaB::getByFormularioSismosTsunamiNacional($escenario);
