@@ -27,8 +27,8 @@ class EscenarioController extends Controller
             ->search($request['query'])
             ->orderBy('created_at', 'desc')
             ->get();
-        // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
-        return response()->json([
+
+            return response()->json([
             'list' => $escenarios,
             'total' => $escenarios->count(),
         ]);
