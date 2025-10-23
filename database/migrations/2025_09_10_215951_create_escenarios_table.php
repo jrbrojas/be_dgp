@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->string('subtitulo')->nullable();
             $table->string('titulo_base')->nullable();
-            $table->smallInteger('aviso')->nullable();
+            $table->string('aviso')->nullable();
             $table->string('url_base');
             $table->string('plantilla_subida')->nullable();
             $table->string('excel')->nullable();

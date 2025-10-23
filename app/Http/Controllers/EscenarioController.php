@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\ExcelImportCompleted;
 use App\Exports\PlantillaExport;
 use App\Http\Requests\EscenarioStoreRequest;
-use App\Imports\EscenarioImport;
+use Illuminate\Support\Str;
 use App\Models\Escenario;
 use App\Models\Formulario;
 use App\Models\Mapa;
@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpPresentation\DocumentLayout;
+use PhpOffice\PhpPresentation\IOFactory;
+use PhpOffice\PhpPresentation\PhpPresentation;
 use Spatie\Browsershot\Browsershot;
 
 class EscenarioController extends Controller
@@ -28,7 +31,7 @@ class EscenarioController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-            return response()->json([
+        return response()->json([
             'list' => $escenarios,
             'total' => $escenarios->count(),
         ]);
@@ -146,7 +149,6 @@ class EscenarioController extends Controller
                 DB::rollBack();
                 throw $e;
             }
-
         } else {
             $escenario->update($data);
         }
@@ -237,4 +239,77 @@ class EscenarioController extends Controller
         $pdf = Pdf::loadView('pdf.escenario', compact('data', 'escenario', 'css'))->setPaper('a4', 'landscape');
         return $pdf->download('escenario.pdf');
     }
+
+
+    public function download(Request $request, Escenario $escenario)
+    {
+        $formulario = [
+            '1' => 'ppt.lluviasAvisoMeteorologico',
+            '2' => 'ppt.lluviasAvisoTrimestral',
+            '3' => 'ppt.lluviasInformacionClimatica',
+            '4' => 'ppt.bajasTempAvisoMeteorologico',
+            '5' => 'ppt.bajasTempAvisoTrimestral',
+            '6' => 'ppt.bajasTempInformacionClimatica',
+            '7' => 'ppt.incForestalesNacionales',
+            '8' => 'ppt.incForestalesRegionales',
+        ];
+
+        $escenario->load('formulario');
+        $plantillas = $request->plantillasAList;
+
+        // 1) Crear presentación
+        $ppt = new PhpPresentation();
+        $layout = new DocumentLayout();
+        $layout->setDocumentLayout(DocumentLayout::LAYOUT_SCREEN_16X9, true);
+        $ppt->setLayout($layout);
+
+
+        // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
+        foreach ($plantillas as $tipo => $data) {
+
+
+            $html = view($formulario[$escenario->formulario_id], compact('escenario', 'data', 'tipo'))->render();
+
+            $pngName = 'card-' . Str::uuid() . '.png';
+            $pngPath = storage_path("app/tmp/{$pngName}");
+            @mkdir(dirname($pngPath), 0775, true);
+
+            Browsershot::html($html)
+                ->windowSize(1280, 720)
+                ->deviceScaleFactor(3)
+                ->waitUntilNetworkIdle()
+                ->timeout(60)
+                ->save($pngPath);
+
+            // Crear una diapositiva (solo la primera usa getActiveSlide())
+            $slide = ($tipo === 'inundaciones')
+                ? $ppt->getActiveSlide()
+                : $ppt->createSlide();
+
+            $shape = $slide->createDrawingShape();
+            $shape->setName('Card');
+            $shape->setDescription('Card exportado');
+            $shape->setPath($pngPath);
+            $shape->setResizeProportional(true);
+
+            $slideW = 960;
+            $slideH = 540;
+            $shape->setHeight(520);
+            $imgW = $shape->getWidth();
+            $imgH = $shape->getHeight();
+            $shape->setOffsetX(($slideW - $imgW) / 2);
+            $shape->setOffsetY(($slideH - $imgH) / 2);
+        }
+
+
+        // 5) Guardar PPTX
+        $pptxName = 'escenario_riesgo_' . $escenario->id . '_' . date('Ymd_His') . '.pptx';
+        $pptxPath = storage_path("app/tmp/{$pptxName}");
+        $writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
+        $writer->save($pptxPath);
+
+        // Limpieza del PNG al finalizar la descarga
+        return response()->download($pptxPath, $pptxName)->deleteFileAfterSend(true);
+    }
+
 }

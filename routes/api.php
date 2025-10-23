@@ -24,6 +24,7 @@ Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
     Route::apiResource('/escenarios', EscenarioController::class);
     Route::post('escenarios/{escenario}/plantilla/print', [EscenarioController::class, 'print']);
     Route::post('escenarios/{escenario}/plantilla/download', [EscenarioController::class, 'downloadPlantilla']);
+    Route::post('/escenarios/{escenario}/ppt', [EscenarioController::class, 'download']);
 
     // formularios
     Route::apiResource('/formularios', FormularioController::class)->only('index', 'show');
