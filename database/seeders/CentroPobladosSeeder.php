@@ -26,20 +26,51 @@ class CentroPobladosSeeder extends Seeder
         $handle = fopen($file, 'r');
         $header = fgetcsv($handle); // Leer cabecera
 
-        while (($row = fgetcsv($handle)) !== false) {
-            $data = array_combine($header, $row);
-            $codigo = str_pad($data['codigo'], 10, '0', STR_PAD_LEFT);
+        $batchSize = 1000; // Inserta en bloques de 1000 filas
+        $batchData = [];
 
-            CentroPoblado::updateOrCreate(
-                ['id' => $data['id']],
-                [
+        DB::disableQueryLog(); // evita consumo excesivo de memoria
+        DB::beginTransaction();
+
+        try {
+            while (($row = fgetcsv($handle)) !== false) {
+                $data = array_combine($header, $row);
+
+                $batchData[] = [
+                    'id'          => $data['id'],
                     'distrito_id' => $data['distrito_id'],
-                    'codigo' => $codigo,
-                    'nombre' => $data['nombre'],
-                ]
-            );
-        }
+                    'codigo'      => str_pad($data['codigo'], 10, '0', STR_PAD_LEFT),
+                    'nombre'      => $data['nombre'],
+                ];
 
-        fclose($handle);
+                // Cada 1000 filas insertamos
+                if (count($batchData) >= $batchSize) {
+                    CentroPoblado::upsert(
+                        $batchData,
+                        ['id'], // columnas únicas
+                        ['distrito_id', 'codigo', 'nombre'] // columnas a actualizar
+                    );
+                    $batchData = [];
+                }
+            }
+
+            // Insertar las que queden
+            if (!empty($batchData)) {
+                CentroPoblado::upsert(
+                    $batchData,
+                    ['id'],
+                    ['distrito_id', 'codigo', 'nombre']
+                );
+            }
+
+            DB::commit();
+            fclose($handle);
+
+            $this->command->info("✅ Centros poblados insertados/actualizados correctamente.");
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            fclose($handle);
+            $this->command->error("❌ Error: " . $e->getMessage());
+        }
     }
 }

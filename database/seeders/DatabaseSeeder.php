@@ -19,10 +19,10 @@ class DatabaseSeeder extends Seeder
                 DepartamentosSeeder::class,
                 ProvinciasSeeder::class,
                 DistritosSeeder::class,
-                CentroPobladosSeeder::class,
                 FormulariosSeeder::class,
                 RoleSeeder::class,
                 UserSeeder::class,
+                CentroPobladosSeeder::class,
             ]
         );
     }

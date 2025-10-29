@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Models\Escenario;
 use App\Models\Formulario;
 use App\Models\Mapa;
+use App\Models\Renat\VistaInstrumentos;
 use App\Support\CopyImporterPlantilla;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -48,10 +49,12 @@ class EscenarioController extends Controller
     {
         // $data = PlantillaA::getByFormularioAvisoMeteorologico($escenario);
         $data = Escenario::getByFormulario($escenario);
+        $instrumentos = VistaInstrumentos::where('periodo', '2025')->first();
 
         return response()->json([
             'escenario' => $escenario->load(['formulario', 'mapas']),
             'plantillas' => $data,
+            'instrumentos' => $instrumentos,
         ]);
     }
 
