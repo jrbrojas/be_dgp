@@ -49,12 +49,11 @@ class EscenarioController extends Controller
     {
         // $data = PlantillaA::getByFormularioAvisoMeteorologico($escenario);
         $data = Escenario::getByFormulario($escenario);
-        $instrumentos = VistaInstrumentos::where('periodo', '2025')->first();
-
+        // $instrumentos = VistaInstrumentos::where('periodo', '2025')->get();
         return response()->json([
             'escenario' => $escenario->load(['formulario', 'mapas']),
             'plantillas' => $data,
-            'instrumentos' => $instrumentos,
+            // 'instrumentos' => $instrumentos,
         ]);
     }
 
