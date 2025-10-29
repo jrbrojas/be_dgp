@@ -96,18 +96,6 @@ class Escenario extends Model
             case 9:
                 return PlantillaB::getByFormularioSismosTsunamiNacional($escenario);
 
-            case 10:
-                return PlantillaA::getByFormularioSismosTsunamiOtrosAmbitos($escenario);
-
-            case 11:
-                return PlantillaA::getByFormularioSequiasNacional($escenario);
-
-            case 12:
-                return PlantillaA::getByFormularioSequiasDepartamental($escenario);
-
-            case 13:
-                return PlantillaA::getByFormularioVolcanesNacional($escenario);
-
             default:
                 return []; // O puedes lanzar una excepción si quieres forzar el manejo de errores
         }

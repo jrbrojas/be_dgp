@@ -31,8 +31,10 @@ Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
 
     // departamentos
     Route::apiResource('/departamentos', DepartamentoController::class)->only('index');
+
     // provincias
     Route::apiResource('/provincias', ProvinciaController::class)->only('index');
+
     // distritos
     Route::apiResource('/distritos', DistritoController::class)->only('index');
 

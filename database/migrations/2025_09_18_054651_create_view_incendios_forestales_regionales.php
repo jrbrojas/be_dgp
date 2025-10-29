@@ -19,8 +19,7 @@ return new class extends Migration
                 pla.*,
                 CASE WHEN pla.tipo = 'IF_DEP_CP' THEN d1.nombre ELSE d2.nombre END AS departamento,
                 CASE WHEN pla.tipo = 'IF_DEP_CP' THEN pr1.nombre ELSE pr2.nombre END AS provincia,
-                CASE WHEN pla.tipo = 'IF_DEP_CP' THEN dr1.nombre ELSE dr2.nombre END AS distrito,
-                CASE WHEN pla.tipo = 'IF_DEP_CP' THEN cp.nombre ELSE NULL END AS centro_poblado
+                CASE WHEN pla.tipo = 'IF_DEP_CP' THEN dr1.nombre ELSE dr2.nombre END AS distrito
             FROM public.plantilla_a pla
                 LEFT JOIN centro_poblados cp ON pla.tipo = 'IF_DEP_CP' AND pla.cod_cp = cp.codigo
                 LEFT JOIN distritos dr1 ON cp.distrito_id = dr1.id

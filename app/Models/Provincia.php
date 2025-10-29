@@ -10,5 +10,7 @@ class Provincia extends Model
         'departamento_id',
         'codigo',
         'nombre',
+        'latitud',
+        'longitud',
     ];
 }

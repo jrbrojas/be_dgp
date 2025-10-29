@@ -31,8 +31,8 @@ return new class extends Migration
             $table->string('nivel_exposicion_3_bt')->nullable();
             $table->integer('alumnos')->default(0);
             $table->integer('docentes')->default(0);
-            $table->decimal('vias', 8,2)->default(0.00);
-            $table->decimal('superficie_agricola', 8,2)->default(0.00);
+            $table->decimal('vias', 10,3)->default(0.000);
+            $table->decimal('superficie_agricola', 10,3)->default(0.000);
             $table->integer('pob_5')->default(0);
             $table->integer('pob_60')->default(0);
             $table->integer('pob_urb')->default(0);
@@ -43,11 +43,11 @@ return new class extends Migration
             $table->integer('viv_tipo4')->default(0);
             $table->integer('viv_tipo5')->default(0);
             $table->integer('hogares')->default(0);
-            $table->decimal('sa_riego', 8,2)->default(0.00);
-            $table->decimal('sa_secano', 8,2)->default(0.00);
+            $table->decimal('sa_riego', 10,3)->default(0.000);
+            $table->decimal('sa_secano', 10,3)->default(0.000);
             $table->integer('prod_agropecuarios')->default(0);
-            $table->decimal('prod_agropecuarios_65', 8,2)->default(0.00);
-            $table->decimal('superficie_de_pastos', 8,2)->default(0.00);
+            $table->decimal('prod_agropecuarios_65', 10,3)->default(0.000);
+            $table->decimal('superficie_de_pastos', 10,3)->default(0.000);
             $table->integer('alpacas')->default(0);
             $table->integer('ovinos')->default(0);
             $table->integer('vacunos')->default(0);

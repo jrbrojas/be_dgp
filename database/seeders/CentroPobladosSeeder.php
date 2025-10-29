@@ -15,7 +15,7 @@ class CentroPobladosSeeder extends Seeder
      */
     public function run(): void
     {
-        $path = 'seeders/centros_poblados.csv';
+        $path = 'centros_poblados.csv';
         $file = Storage::disk('local')->path($path);
 
         if (!file_exists($file)) {
@@ -28,12 +28,13 @@ class CentroPobladosSeeder extends Seeder
 
         while (($row = fgetcsv($handle)) !== false) {
             $data = array_combine($header, $row);
+            $codigo = str_pad($data['codigo'], 10, '0', STR_PAD_LEFT);
 
             CentroPoblado::updateOrCreate(
                 ['id' => $data['id']],
                 [
                     'distrito_id' => $data['distrito_id'],
-                    'codigo' => $data['codigo'],
+                    'codigo' => $codigo,
                     'nombre' => $data['nombre'],
                 ]
             );

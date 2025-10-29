@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ExcelImportCompleted;
 use App\Exports\PlantillaExport;
 use App\Http\Requests\EscenarioStoreRequest;
 use Illuminate\Support\Str;
 use App\Models\Escenario;
 use App\Models\Formulario;
 use App\Models\Mapa;
-use App\Support\CopyImporterPlantillaA;
+use App\Support\CopyImporterPlantilla;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpPresentation\DocumentLayout;
@@ -103,7 +101,9 @@ class EscenarioController extends Controller
         // procesar la plantilla
         if ($request->file('plantilla')) {
             $storedRelPath = $escenario->plantilla_subida; // lo que retorna storeFile (p.ej. "imports/xxxx.csv|xlsx")
-            CopyImporterPlantillaA::importCsvToPlantillaA($storedRelPath, $escenario->id);
+            $escenario->formulario->plantilla === 'A' ?
+            CopyImporterPlantilla::importCsvToPlantillaA($storedRelPath, $escenario->id) :
+            CopyImporterPlantilla::importCsvToPlantillaB($storedRelPath, $escenario->id);
         }
 
         return response()->json(['message' => 'Escenario creado correctamente!']);
@@ -142,8 +142,13 @@ class EscenarioController extends Controller
             try {
                 $escenario->update($data);
                 // se elimina la data anterior de plantilla
-                $escenario->plantillasA()->delete();
-                CopyImporterPlantillaA::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
+                if ($escenario->formulario->plantilla === 'A') {
+                    $escenario->plantillasA()->delete();
+                    CopyImporterPlantilla::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
+                }else{
+                    $escenario->plantillasB()->delete();
+                    CopyImporterPlantilla::importCsvToPlantillaB($nuevoRelPath, $escenario->id);
+                }
                 DB::commit();
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -239,7 +244,6 @@ class EscenarioController extends Controller
         $pdf = Pdf::loadView('pdf.escenario', compact('data', 'escenario', 'css'))->setPaper('a4', 'landscape');
         return $pdf->download('escenario.pdf');
     }
-
 
     public function download(Request $request, Escenario $escenario)
     {

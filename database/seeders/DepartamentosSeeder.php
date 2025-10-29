@@ -32,9 +32,10 @@ class DepartamentosSeeder extends Seeder
                 [
                     'codigo' => $data['codigo'],
                     'nombre' => $data['nombre'],
-                    'capital' => $data['capital'],
-                    'created_at' => $data['created_at'] ?: now(),
-                    'updated_at' => $data['updated_at'] ?: now(),
+                    'latitud' => $data['latitud'],
+                    'longitud' => $data['longitud'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]
             );
         }

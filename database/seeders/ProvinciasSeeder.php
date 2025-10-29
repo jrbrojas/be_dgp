@@ -3,9 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Provincia;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProvinciasSeeder extends Seeder
@@ -35,6 +33,8 @@ class ProvinciasSeeder extends Seeder
                     'departamento_id' => $data['departamento_id'],
                     'codigo' => $data['codigo'],
                     'nombre' => $data['nombre'],
+                    'latitud' => $data['latitud'],
+                    'longitud' => $data['longitud'],
                 ]
             );
         }

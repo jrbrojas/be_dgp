@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('codigo');
             $table->string('nombre');
-            $table->string('capital');
+            $table->string('latitud');
+            $table->string('longitud');
             $table->timestamps();
         });
     }

@@ -9,6 +9,7 @@ class Departamento extends Model
     protected $fillable = [
         'codigo',
         'nombre',
-        'capital',
+        'latitud',
+        'longitud',
     ];
 }

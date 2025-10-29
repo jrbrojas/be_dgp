@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('departamento_id')->constrained('departamentos')->onDelete('cascade');
             $table->string('codigo');
             $table->string('nombre');
+            $table->string('latitud');
+            $table->string('longitud');
             $table->timestamps();
         });
     }
