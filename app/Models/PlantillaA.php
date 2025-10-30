@@ -188,6 +188,17 @@ class PlantillaA extends Model
     public static function getByFormularioAvisoTrimestral(Escenario $escenario)
     {
         $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('centro_poblados as cp', function ($join) {
+                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'TRI_LLUVIAS_CP');
+            })
+            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_alt', function ($join) {
+                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'TRI_LLUVIAS_CP');
+            })
+            ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
+            ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
+            ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
+            ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
             ->where('pla.escenario_id', $escenario->id)
             ->whereNotNull('pla.nivel_exposicion_2_inu')
             ->selectRaw("
@@ -197,6 +208,8 @@ class PlantillaA extends Model
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN 1 END) AS total_centro_poblado,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_ES' THEN 1 END) AS total_est_salud,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa,
+                ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos,
+
                 (
                     SELECT json_agg(dep)
                     FROM (
@@ -236,6 +249,17 @@ class PlantillaA extends Model
             });
 
         $movimiento_masa = DB::table('plantilla_a as pla')
+            ->leftJoin('centro_poblados as cp', function ($join) {
+                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'TRI_LLUVIAS_CP');
+            })
+            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_alt', function ($join) {
+                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'TRI_LLUVIAS_CP');
+            })
+            ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
+            ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
+            ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
+            ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
             ->where('pla.escenario_id', $escenario->id)
             ->whereNotNull('pla.nivel_exposicion_1_mm')
             ->selectRaw("
@@ -245,6 +269,7 @@ class PlantillaA extends Model
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN 1 END) AS total_centro_poblado,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_ES' THEN 1 END) AS total_est_salud,
                 COUNT(CASE WHEN pla.tipo = 'TRI_LLUVIAS_IE' THEN 1 END) AS total_inst_educativa,
+                ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'TRI_LLUVIAS_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos,
                 (
                     SELECT json_agg(dep)
                     FROM (
@@ -307,6 +332,7 @@ class PlantillaA extends Model
                 SUM(pla.ie) AS total_inst_educativa,
                 SUM(pla.vias) AS total_vias,
                 SUM(pla.superficie_agricola) AS total_superficie_agricola,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos,
                 COUNT(DISTINCT dr.id) AS total_distritos
             ")
             ->whereNotNull('pla.nivel_riesgo')
@@ -337,6 +363,7 @@ class PlantillaA extends Model
                 SUM(pla.ie) AS total_inst_educativa,
                 SUM(pla.vias) AS total_vias,
                 SUM(pla.superficie_agricola) AS total_superficie_agricola,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos,
                 COUNT(DISTINCT dr.id) AS total_distritos
             ")
             ->whereNotNull('pla.nivel_riesgo')
@@ -423,6 +450,17 @@ class PlantillaA extends Model
     {
         // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('centro_poblados as cp', function ($join) {
+                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'TRI_DT_CP');
+            })
+            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_alt', function ($join) {
+                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'TRI_DT_CP');
+            })
+            ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
+            ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
+            ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
+            ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
             ->where('pla.escenario_id', $escenario->id)
             ->whereNotNull('pla.nivel_exposicion_3_bt')
             ->selectRaw("
@@ -432,6 +470,7 @@ class PlantillaA extends Model
                 COUNT(CASE WHEN pla.tipo = 'TRI_DT_CP' THEN 1 END) AS total_centro_poblado,
                 COUNT(CASE WHEN pla.tipo = 'TRI_DT_ES' THEN 1 END) AS total_est_salud,
                 COUNT(CASE WHEN pla.tipo = 'TRI_DT_IE' THEN 1 END) AS total_inst_educativa,
+                ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'TRI_DT_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos,
                 (
                     SELECT json_agg(dep)
                     FROM (
@@ -480,6 +519,9 @@ class PlantillaA extends Model
     {
         // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('distritos as dr', 'pla.cod_ubigeo', '=', 'dr.codigo')
+            ->leftJoin('provincias as pr', 'dr.provincia_id', '=', 'pr.id')
+            ->leftJoin('departamentos as d', 'pr.departamento_id', '=', 'd.id')
             ->where('pla.escenario_id', $escenario->id)
             ->whereNotNull('pla.nivel_riesgo')
             ->where('pla.tipo', 'CLI_HEL_POB')
@@ -488,6 +530,7 @@ class PlantillaA extends Model
                 SUM(pla.poblacion) AS total_poblacion,
                 SUM(pla.vivienda) AS total_vivienda,
                 COUNT(DISTINCT pla.cod_ubigeo) AS total_distritos,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos,
                 (
                     SELECT json_agg(dep)
                     FROM (
@@ -535,6 +578,17 @@ class PlantillaA extends Model
     {
         // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
+            ->leftJoin('centro_poblados as cp', function ($join) {
+                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'IF_NAC_CP');
+            })
+            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_alt', function ($join) {
+                $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'IF_NAC_CP');
+            })
+            ->leftJoin('provincias as pr_cp', 'dr_cp.provincia_id', '=', 'pr_cp.id')
+            ->leftJoin('provincias as pr_alt', 'dr_alt.provincia_id', '=', 'pr_alt.id')
+            ->leftJoin('departamentos as d_cp', 'pr_cp.departamento_id', '=', 'd_cp.id')
+            ->leftJoin('departamentos as d_alt', 'pr_alt.departamento_id', '=', 'd_alt.id')
             ->where('pla.escenario_id', $escenario->id)
             ->whereNotNull('pla.nivel_riesgo')
             ->selectRaw("
@@ -546,6 +600,7 @@ class PlantillaA extends Model
                 COUNT(CASE WHEN pla.tipo = 'IF_NAC_IE' THEN 1 END) AS total_inst_educativa,
                 SUM(CASE WHEN pla.tipo = 'IF_NAC_SAGRIC' THEN pla.superficie_agricola ELSE 0 END) AS total_superficie_agricola,
                 COUNT(CASE WHEN pla.tipo = 'IF_NAC_SARQ' THEN 1 END) AS total_mon_arqueologico,
+                ARRAY_AGG(DISTINCT CASE WHEN pla.tipo = 'IF_NAC_CP' THEN COALESCE(d_cp.nombre, d_alt.nombre) END) AS departamentos,
                 (
                     SELECT json_agg(dep)
                     FROM (

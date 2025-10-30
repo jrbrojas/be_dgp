@@ -10,10 +10,12 @@ use App\Models\Formulario;
 use App\Models\Mapa;
 use App\Models\Renat\VistaInstrumentos;
 use App\Support\CopyImporterPlantilla;
+use App\View\Components\FormatNombreArray;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpPresentation\DocumentLayout;
@@ -47,13 +49,13 @@ class EscenarioController extends Controller
 
     public function show(Escenario $escenario)
     {
-        // $data = PlantillaA::getByFormularioAvisoMeteorologico($escenario);
         $data = Escenario::getByFormulario($escenario);
-        // $instrumentos = VistaInstrumentos::where('periodo', '2025')->get();
+        $instrumentos = VistaInstrumentos::instrumentosPorNivel($data);
+
         return response()->json([
             'escenario' => $escenario->load(['formulario', 'mapas']),
             'plantillas' => $data,
-            // 'instrumentos' => $instrumentos,
+            'instrumentos' => $instrumentos,
         ]);
     }
 
@@ -61,10 +63,12 @@ class EscenarioController extends Controller
     {
         $escenario = Escenario::where('formulario_id', $request->formulario)->orderBy('id', 'desc')->first();
         $data = $escenario ? Escenario::getByFormulario($escenario) : [];
+        $instrumentos = VistaInstrumentos::instrumentosPorNivel($data);
 
         return response()->json([
             'escenario' => $escenario ? $escenario->load(['formulario', 'mapas']) : null,
             'plantillas' => $data,
+            'instrumentos' => $instrumentos,
         ]);
     }
 
@@ -104,8 +108,8 @@ class EscenarioController extends Controller
         if ($request->file('plantilla')) {
             $storedRelPath = $escenario->plantilla_subida; // lo que retorna storeFile (p.ej. "imports/xxxx.csv|xlsx")
             $escenario->formulario->plantilla === 'A' ?
-            CopyImporterPlantilla::importCsvToPlantillaA($storedRelPath, $escenario->id) :
-            CopyImporterPlantilla::importCsvToPlantillaB($storedRelPath, $escenario->id);
+                CopyImporterPlantilla::importCsvToPlantillaA($storedRelPath, $escenario->id) :
+                CopyImporterPlantilla::importCsvToPlantillaB($storedRelPath, $escenario->id);
         }
 
         return response()->json(['message' => 'Escenario creado correctamente!']);
@@ -147,7 +151,7 @@ class EscenarioController extends Controller
                 if ($escenario->formulario->plantilla === 'A') {
                     $escenario->plantillasA()->delete();
                     CopyImporterPlantilla::importCsvToPlantillaA($nuevoRelPath, $escenario->id);
-                }else{
+                } else {
                     $escenario->plantillasB()->delete();
                     CopyImporterPlantilla::importCsvToPlantillaB($nuevoRelPath, $escenario->id);
                 }
@@ -317,5 +321,4 @@ class EscenarioController extends Controller
         // Limpieza del PNG al finalizar la descarga
         return response()->download($pptxPath, $pptxName)->deleteFileAfterSend(true);
     }
-
 }
