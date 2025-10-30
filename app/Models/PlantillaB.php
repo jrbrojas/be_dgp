@@ -80,7 +80,8 @@ class PlantillaB extends Model
                 SUM(pla.red_vial_nacional) AS total_red_vial_nacional,
                 SUM(pla.red_vial_departamental) AS total_red_vial_departamental,
                 SUM(pla.red_vial_vecinal) AS total_red_vial_vecinal,
-                SUM(pla.red_agua) AS total_red_agua
+                SUM(pla.red_agua) AS total_red_agua,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
             ")
             ->groupBy('pla.nr_sismo')
             ->orderByRaw("
@@ -111,7 +112,8 @@ class PlantillaB extends Model
                 SUM(pla.red_vial_nacional) AS total_red_vial_nacional,
                 SUM(pla.red_vial_departamental) AS total_red_vial_departamental,
                 SUM(pla.red_vial_vecinal) AS total_red_vial_vecinal,
-                SUM(pla.red_agua) AS total_red_agua
+                SUM(pla.red_agua) AS total_red_agua,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
             ")
             ->groupBy('pla.nr_tsunami')
             ->orderByRaw("
@@ -142,7 +144,8 @@ class PlantillaB extends Model
                 SUM(pla.red_vial_nacional) AS total_red_vial_nacional,
                 SUM(pla.red_vial_departamental) AS total_red_vial_departamental,
                 SUM(pla.red_vial_vecinal) AS total_red_vial_vecinal,
-                SUM(pla.red_agua) AS total_red_agua
+                SUM(pla.red_agua) AS total_red_agua,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
             ")
             ->groupBy('pla.nr_glaciar')
             ->orderByRaw("
@@ -173,7 +176,8 @@ class PlantillaB extends Model
                 SUM(pla.red_vial_nacional) AS total_red_vial_nacional,
                 SUM(pla.red_vial_departamental) AS total_red_vial_departamental,
                 SUM(pla.red_vial_vecinal) AS total_red_vial_vecinal,
-                SUM(pla.red_agua) AS total_red_agua
+                SUM(pla.red_agua) AS total_red_agua,
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
             ")
             ->groupBy('pla.nr_movimientos_masa')
             ->orderByRaw("
