@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Log;
 class VistaInstrumentos extends Model
 {
     protected $connection = 'pgsql_renat';
-    protected $table = 'vista_unificada_planes_instrumentos_fortalecimiento';
+    // protected $table = 'vista_unificada_planes_instrumentos_fortalecimiento';
+    protected $table = 'view_instrumentos';
     public $incrementing = false;
     public $timestamps = false;
 
@@ -46,9 +47,9 @@ class VistaInstrumentos extends Model
                 'distrito',
                 DB::raw('SUM(COALESCE(pprrd,0)) AS pprrd'),
                 DB::raw('SUM(COALESCE(evar,0))   AS evar'),
-                DB::raw('SUM(COALESCE(reas_pob,0))::numeric AS reas'),
+                DB::raw('SUM(COALESCE(reas,0))::numeric AS reas'),
             ])
-                ->where('periodo', 2025)
+                // ->where('periodo', 2025)
                 ->whereIn('departamento', $departamentosTipo->all())
                 ->groupBy('departamento', 'provincia', 'distrito')
                 ->orderBy('departamento')->orderBy('provincia')->orderBy('distrito')
@@ -62,7 +63,7 @@ class VistaInstrumentos extends Model
                         fn($rows) => [
                             'pprrd' => (int) ($rows->sum('pprrd')),
                             'evar'  => (int) ($rows->sum('evar')),
-                            'pec'   => (float) ($rows->sum('pec')),
+                            'reas'   => (float) ($rows->sum('reas')),
                         ]
                     )
                 ));
