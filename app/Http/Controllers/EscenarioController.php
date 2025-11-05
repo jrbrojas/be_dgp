@@ -277,7 +277,6 @@ class EscenarioController extends Controller
         // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
         foreach ($plantillas as $tipo => $data) {
 
-
             $html = view($formulario[$escenario->formulario_id], compact('escenario', 'data', 'tipo'))->render();
 
             $pngName = 'card-' . Str::uuid() . '.png';
@@ -285,11 +284,19 @@ class EscenarioController extends Controller
             @mkdir(dirname($pngPath), 0775, true);
 
             Browsershot::html($html)
+                ->select('#capture')
                 ->windowSize(1280, 720)
                 ->deviceScaleFactor(3)
                 ->waitUntilNetworkIdle()
                 ->timeout(60)
                 ->save($pngPath);
+
+            // Browsershot::html($html)
+            //     ->select('#capture')
+            //     ->deviceScaleFactor(3)
+            //     ->waitUntilNetworkIdle()
+            //     ->timeout(60)
+            //     ->save($pngPath);
 
             // Crear una diapositiva (solo la primera usa getActiveSlide())
             $slide = ($tipo === 'inundaciones')

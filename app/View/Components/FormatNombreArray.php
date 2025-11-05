@@ -27,7 +27,8 @@ class FormatNombreArray extends Component
             return [];
         }
 
-        $clean = preg_replace(['/^{|}$/', '/"|\'/'], '', $this->pgArray);
+        $decoded = html_entity_decode($this->pgArray, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $clean = preg_replace(['/^{|}$/', '/["\']+/'], '', $decoded);
 
         return array_filter(
             array_map('trim', explode(',', $clean)),
