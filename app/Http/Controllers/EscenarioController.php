@@ -277,6 +277,15 @@ class EscenarioController extends Controller
         // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
         foreach ($plantillas as $tipo => $data) {
 
+            $chromeUserDir  = storage_path('app/chrome-user');
+            $chromeDataDir  = storage_path('app/chrome-data');
+            $chromeCacheDir = storage_path('app/chrome-cache');
+
+            // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
+            putenv('HOME=' . storage_path('app'));
+            putenv('XDG_CONFIG_HOME=' . storage_path('app'));
+            putenv('XDG_CACHE_HOME=' . storage_path('app'));
+
             $html = view($formulario[$escenario->formulario_id], compact('escenario', 'data', 'tipo'))->render();
 
             $pngName = 'card-' . Str::uuid() . '.png';
@@ -297,6 +306,29 @@ class EscenarioController extends Controller
                 ->waitUntilNetworkIdle()
                 ->save($pngPath);
 
+            Browsershot::html($html)
+                ->setChromePath('/usr/bin/chromium')          // o /usr/bin/google-chrome-stable
+                ->setNodeBinary('/usr/bin/node')
+                ->setNpmBinary('/usr/bin/npm')
+                ->windowSize(1280, 720)
+                ->addChromiumArguments([
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                    '--disable-crash-reporter',
+                    '--noerrdialogs',
+                    '--disable-extensions',
+                    '--disable-features=TranslateUI',
+                    '--user-data-dir=' . $chromeUserDir,
+                    '--data-path='     . $chromeDataDir,
+                    '--disk-cache-dir='. $chromeCacheDir,
+                ])
+                ->deviceScaleFactor(3)
+                ->select('#capture')                           // o ->fullPage()
+                ->waitUntilNetworkIdle()
+                ->timeout(120)
+                ->save($pngPath);
             // Browsershot::html($html)
             //     ->select('#capture')
             //     ->windowSize(1280, 720)
