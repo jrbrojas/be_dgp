@@ -284,12 +284,26 @@ class EscenarioController extends Controller
             @mkdir(dirname($pngPath), 0775, true);
 
             Browsershot::html($html)
-                ->select('#capture')
-                ->windowSize(1280, 720)
+                ->setChromePath('/usr/bin/chromium')
+                ->setNodeBinary('/usr/bin/node')
+                ->setNpmBinary('/usr/bin/npm')
+                ->addChromiumArguments([
+                    '--no-sandbox',
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                ])
                 ->deviceScaleFactor(3)
+                ->timeout(120)
                 ->waitUntilNetworkIdle()
-                ->timeout(60)
                 ->save($pngPath);
+
+            // Browsershot::html($html)
+            //     ->select('#capture')
+            //     ->windowSize(1280, 720)
+            //     ->deviceScaleFactor(3)
+            //     ->waitUntilNetworkIdle()
+            //     ->timeout(60)
+            //     ->save($pngPath);
 
             // Browsershot::html($html)
             //     ->select('#capture')
