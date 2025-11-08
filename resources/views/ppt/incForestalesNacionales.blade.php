@@ -82,7 +82,7 @@
                 @foreach (array_slice($data, 0, 1) as $index => $item)
                     <div class="flex flex-col gap-3 justify-start items-center">
 
-                        <div class="p-2 bg-teal-600 rounded-full">
+                        <div class="p-2 bg-teal-600 rounded-full w-full text-center">
                             <h4 class='text-sm font-medium text-white mr-4 ml-4'>INCENDIO FORESTALES</h4>
                         </div>
 
@@ -93,7 +93,7 @@
                             {{ $item['nivel'] }}
                         </div>
 
-                        <div class="bg-gray-200/50 rounded-4xl p-5 space-y-5">
+                        <div class="bg-gray-200/50 rounded-4xl p-5 space-y-5 w-full">
                             {{-- Centros poblados --}}
                             <div class="flex items-center gap-8">
                                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
