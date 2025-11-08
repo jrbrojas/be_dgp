@@ -93,12 +93,11 @@
                                 </div>
                                 <div class="text-sm text-teal-600">
                                     Departamentos:
-                                    <span
-                                        class="{{ $nivelColorClasses[strtoupper($item['nivel'])] }} bg-white font-semibold">
-                                        @if ($item['departamentos'])
-                                            <x-format-nombre-array pgArray="{{ $item['departamentos'] }}" />
-                                        @endif
-                                    </span>
+                                    @if ($item['departamentos'])
+                                        <x-format-nombre-array
+                                            class="{{ $nivelColorClasses[strtoupper($item['nivel'])] }} bg-white font-semibold"
+                                            pgArray="{{ $item['departamentos'] }}" />
+                                    @endif
                                 </div>
                             </div>
 
@@ -191,7 +190,7 @@
                             </div>
 
                             {{-- Datos del bloque derecho --}}
-                            @foreach (array_slice($data, 0, 1) as $index => $item)
+                            @foreach (array_slice($data, 1, 1) as $index => $item)
                                 <div class="grid gap-3 justify-items-center text-center">
                                     <div>
                                         <p class="text-xl font-bold">
@@ -220,7 +219,7 @@
                         </div>
                     </div>
 
-                    @foreach (array_slice($data, 0, 1) as $index => $item)
+                    @foreach (array_slice($data, 1, 1) as $index => $item)
                         <div class="p-2 flex flex-col justify-between">
                             <div class='flex flex-col gap-2'>
                                 <div
@@ -229,12 +228,11 @@
                                 </div>
                                 <div class="text-sm text-teal-600">
                                     Departamentos:
-                                    <span
-                                        class="{{ $nivelColorClasses[strtoupper($item['nivel'])] }} bg-white font-semibold">
-                                        @if ($item['departamentos'])
-                                            <x-format-nombre-array pgArray="{{ $item['departamentos'] }}" />
-                                        @endif
-                                    </span>
+                                    @if ($item['departamentos'])
+                                        <x-format-nombre-array
+                                            class="{{ $nivelColorClasses[strtoupper($item['nivel'])] }} bg-white font-semibold"
+                                            pgArray="{{ $item['departamentos'] }}" />
+                                    @endif
                                 </div>
                             </div>
 
@@ -249,21 +247,23 @@
                             </div>
                         </div>
                     @endforeach
+
                 </div>
 
                 <div class='flex items-center gap-2'>
                     <span class="text-xs flex-shrink-0">Fuente: CENEPRED (2025)</span>
                     <a href={{ $escenario->url_base }} target="_blank" rel="noreferrer"
                         class="block bg-teal-600 p-2 text-white rounded-md overflow-hidden whitespace-nowrap text-ellipsis">
-                        Ver detalle
+                        Ver Informe Escenario de Riesgo
                     </a>
                 </div>
             </div>
 
             <div class='flex items-center  justify-center'>
                 @if ($escenario->mapas)
-                    <x-image src="{{ $escenario->mapas[$indexMapa[$tipo]] ? $escenario->mapas[$indexMapa[$tipo]]->ruta : null }}"
-                            alt="Mapa principal" ratio="16/9" />
+                    <x-image
+                        src="{{ $escenario->mapas[$indexMapa[$tipo]] ? $escenario->mapas[$indexMapa[$tipo]]->ruta : null }}"
+                        alt="Mapa principal" ratio="16/9" />
                 @endif
             </div>
 

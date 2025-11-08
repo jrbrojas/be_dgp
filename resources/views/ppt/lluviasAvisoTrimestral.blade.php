@@ -97,7 +97,7 @@
 
                 @foreach (array_slice($data, 0, 1) as $index => $item)
                     <div class="grid grid-cols-2 border rounded-xl border-teal-600 shadow-md bg-white">
-                        <div class="p-2 space-y-4">
+                        <div class="flex justify-center flex-col p-2 gap-4">
                             {{-- Distritos --}}
                             <div class="flex items-center gap-3">
                                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
@@ -181,12 +181,11 @@
                             </div>
                             <p class="text-sm text-teal-600 mt-2">
                                 Departamentos:
-                                <span
-                                    class="{{ $nivelColorClasses[strtoupper($item['nivel'])] }} bg-white font-semibold">
-                                    @if ($item['departamentos'])
-                                        <x-format-nombre-array pgArray="{{ $item['departamentos'] }}" />
-                                    @endif
-                                </span>
+                                @if ($item['departamentos'])
+                                    <x-format-nombre-array
+                                        class="{{ $nivelColorClasses[strtoupper($item['nivel'])] }} bg-white font-semibold"
+                                        pgArray="{{ $item['departamentos'] }}" />
+                                @endif
                             </p>
 
                             <div class="mt-3 text-sm text-teal-600 font-semibold">
@@ -206,7 +205,7 @@
                     <span class="text-xs flex-shrink-0">Fuente: CENEPRED (2025)</span>
                     <a href={{ $escenario->url_base }} target="_blank" rel="noreferrer"
                         class="block bg-teal-600 p-2 text-white rounded-md overflow-hidden whitespace-nowrap text-ellipsis">
-                        Ver detalle
+                        Ver Informe Escenario de Riesgo
                     </a>
                 </div>
             </div>

@@ -2,10 +2,13 @@
 
 @php
 $items = $getItems();
+$class = $attributes->get('class', '');
 @endphp
 
-@if (!empty($items))
-    <div class="flex flex-col gap-1 text-teal-700">
+@if (count($items) === 1)
+ <span class="{{ $class }}">{{ $items[0] }}</span>
+@elseif  (!empty($items))
+    <div class="flex flex-col gap-1 {{ $class }}">
         @foreach ($items as $item)
             <div>• {{ $item }}</div>
         @endforeach
