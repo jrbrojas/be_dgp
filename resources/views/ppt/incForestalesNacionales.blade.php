@@ -68,8 +68,9 @@
 
             <div class='col-span-2'>
                 <div class='w-full flex flex-col gap-4 justify-center items-center'>
-                    <div class='flex-1 items-center text-center'>
+                    <div class='flex-1 flex-col items-center text-center'>
                         <h4 class="text-center font-semibold text-teal-600">{{ $escenario->nombre }}</h4>
+                        <h4 class="text-center font-semibold text-green-600/60">{{ $escenario->subtitulo }}</h4>
                     </div>
 
                     @if ($escenario->mapas)

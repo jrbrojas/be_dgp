@@ -60,13 +60,9 @@
                         <h3 class="text-sm text-center font-semibold text-teal-600">
                             {{ $escenario->nombre }}
                         </h3>
-                        @foreach (array_slice($data, 0, 1) as $index => $item)
-                            @if ($item['departamentos'])
-                                <h3 class='text-sm text-center font-bold text-green-600/70'>
-                                    DEPARTAMENTO DE <x-format-nombre-array class="text-sm text-center font-bold text-green-600/70"
-                                            pgArray="{{ $item['departamentos'] }}" />
-                                </h3>
-                            @endif
+                        <h3 class='text-sm text-center font-bold text-green-600/70'>
+                            {{ $escenario->subtitulo }}
+                        </h3>
                         @endforeach
                     </div>
 
