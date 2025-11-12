@@ -10,7 +10,9 @@ class FormularioController extends Controller
     public function index()
     {
         $formularios = Formulario::get();
-        return response()->json($formularios);
+        return response()->json([
+            'list' => $formularios,
+        ]);
     }
 
     public function show(Formulario $formulario)

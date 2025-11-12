@@ -31,8 +31,10 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'sometimes|string|min:5',
+            'password_confirmation' => 'sometimes|required_with:password|same:password',
         ]);
-        $data['password'] = '12345';
+
         User::create($data);
 
         return response()->json([
@@ -57,7 +59,14 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
+            'password' => 'sometimes|nullable|string|min:5',
+            'password_confirmation' => 'sometimes|required_with:password|same:password',
         ]);
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
+
         $usuario->update($data);
         return response()->json(['message' => 'Usuario actualizado exitosamente!']);
     }

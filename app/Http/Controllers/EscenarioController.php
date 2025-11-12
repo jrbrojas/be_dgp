@@ -38,17 +38,9 @@ class EscenarioController extends Controller
         ]);
     }
 
-    public function formulariosFull()
-    {
-        $formularios = Formulario::get();
-        // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
-        return response()->json([
-            'list' => $formularios,
-        ]);
-    }
-
     public function show(Escenario $escenario)
     {
+        $escenario->excel = asset('storage/' . $escenario->excel);
         $data = Escenario::getByFormulario($escenario);
         $instrumentos = VistaInstrumentos::instrumentosPorNivel($data);
 
@@ -62,6 +54,7 @@ class EscenarioController extends Controller
     public function showPI(Request $request)
     {
         $escenario = Escenario::where('formulario_id', $request->formulario)->orderBy('id', 'desc')->first();
+        $escenario->excel = asset('storage/' . $escenario->excel);
         $data = $escenario ? Escenario::getByFormulario($escenario) : [];
         $instrumentos = VistaInstrumentos::instrumentosPorNivel($data);
 
@@ -85,7 +78,7 @@ class EscenarioController extends Controller
         $data = $request->validated();
         $escenario = DB::transaction(function () use ($request, $data, $imagenMapas) {
             $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
-            $data['excel'] = $this->storeFile($request->file('excel'));
+            $data['excel'] = $this->storeFile($request->file('excel'), 'public');
             $escenarioData = Escenario::create($data);
 
             foreach ($imagenMapas as $campo) {
@@ -128,7 +121,7 @@ class EscenarioController extends Controller
         $data = $request->validated();
 
         if ($request->file('excel')) {
-            $urlExcel = $this->storeFile($request->file('excel'));
+            $urlExcel = $this->storeFile($request->file('excel'), 'public');
             if (!empty($escenario->excel)) {
                 $this->deleteFile($escenario->excel);
             }
@@ -233,22 +226,17 @@ class EscenarioController extends Controller
         return Excel::download(new PlantillaExport($data), "plantilla_$escenario->id.xlsx");
     }
 
-    public function print(Request $request, Escenario $escenario)
+    public function excel(Request $request, Escenario $escenario)
     {
-        $escenario->load(['formulario', 'mapas']);
-        $data = $request->input('plantillasAList', []);
-        //$css = file_get_contents(public_path('build/assets/app-B3On5526.css')); // cambiar segun el nombre del css en public
-        $css = "";
-        $html = view('pdf.escenario', compact('escenario', 'data', 'css'))->render();
+        $path = $escenario->excel;
 
-        // return Browsershot::html($html)
-        //     ->format('A4')
-        //     ->landscape()
-        //     ->margins(10, 10, 10, 10)
-        //     ->waitUntilNetworkIdle()
-        //     ->pdf(); // <-- Retorna el binario directamente
-        $pdf = Pdf::loadView('pdf.escenario', compact('data', 'escenario', 'css'))->setPaper('a4', 'landscape');
-        return $pdf->download('escenario.pdf');
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $fileName = 'escenario-riesgo-' . $escenario->id . '.xlsx';
+
+        return Storage::disk('public')->download($path, $fileName);
     }
 
     public function download(Request $request, Escenario $escenario)

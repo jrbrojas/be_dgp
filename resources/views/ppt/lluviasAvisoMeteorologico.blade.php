@@ -58,7 +58,7 @@
             <div class='flex flex-col flex-1 gap-3'>
                 <div class='flex flex-col gap-1 justify-center items-center'>
 
-                    <div class='flex items-center justify-between w-full'>
+                    <div class='flex items-center justify-between gap-2 w-full'>
                         <div class='flex-1'></div>
 
                         <div
@@ -68,7 +68,7 @@
 
                         <div class='flex-1 flex justify-end'>
                             <div
-                                class='bg-green-600 bg-opacity-70 rounded-lg text-lg font-semibold text-white px-4 py-1'>
+                                class='bg-green-600 bg-opacity-70 rounded-lg font-semibold text-white px-4 py-2'>
                                 <span>{{ $escenario->nombre }}</span>
                             </div>
                         </div>

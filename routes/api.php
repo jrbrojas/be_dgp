@@ -16,15 +16,13 @@ use Illuminate\Support\Facades\Route;
 Route::post('/v1/login', [AuthController::class, 'login']);
 
 Route::get('v1/escenarios/show/{formulario}/pi', [EscenarioController::class, 'showPI']);
-Route::post('v1/escenarios/{escenario}/download', [EscenarioController::class, 'download']);
+Route::post('v1/escenarios/{escenario}/excel', [EscenarioController::class, 'excel']);
+Route::get('v1/escenarios/{escenario}/download', [EscenarioController::class, 'download']);
 
 Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
 
     // escenarios
-    Route::get('escenarios/formularios', [EscenarioController::class, 'formulariosFull']);
     Route::apiResource('/escenarios', EscenarioController::class);
-    // Route::post('escenarios/{escenario}/plantilla/print', [EscenarioController::class, 'print']);
-    // Route::post('escenarios/{escenario}/download', [EscenarioController::class, 'download']);
 
     // formularios
     Route::apiResource('/formularios', FormularioController::class)->only('index', 'show');

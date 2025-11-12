@@ -14,13 +14,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $token = $request->authenticate();
-        return response()->json([
-            'status' => 'success',
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
-            'user' => Auth::user()->load('role'),
-        ]);
+        return $this->respondWithToken($token);
     }
 
     public function me()
@@ -41,5 +35,13 @@ class AuthController extends Controller
 
     protected function respondWithToken($token)
     {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60,
+            'user' => Auth::user()->load('role'),
+            'status' => 'success',
+        ]);
+
     }
 }

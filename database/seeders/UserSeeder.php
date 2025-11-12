@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'avatar' => '/img/avatars/thumb-2.jpg',
             'name' => 'Administrador',
             'email' => 'admin@cenepred.gob.pe',
-            'password' => '12345',
+            'password' => '$Cenepred2025$',
         ]);
 
         User::create([
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
             'avatar' => '/img/avatars/thumb-1.jpg',
             'name' => 'Usuario',
             'email' => 'usuario@cenepred.gob.pe',
-            'password' => '12345',
+            'password' => '$Cenepred2025$',
         ]);
     }
 }

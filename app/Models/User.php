@@ -54,7 +54,6 @@ class User extends Authenticatable implements JWTSubject
 
     public function scopeSearch(Builder $query, $value)
     {
-        Log::info($value);
         $query->where('name', 'ilike', "%{$value}%")
             ->orWhere('email', 'ilike', "%{$value}%");
     }
