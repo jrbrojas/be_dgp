@@ -86,7 +86,7 @@
                                             <td class="text-start p-2 text-xs">Distritos: </td>
                                             @foreach (array_slice($data['inundaciones'], 0, 2) as $index => $item)
                                                 <td key={index} class="text-start p-2 text-xs">
-                                                    {{ $item['total_distritos']}}
+                                                    {{ numero_formateado($item['total_distritos']) }}
                                                 </td>
                                             @endforeach
                                         </tr>
@@ -94,42 +94,42 @@
                                             <td class="text-start p-2 text-xs">Población: </td>
                                             @foreach (array_slice($data['inundaciones'], 0, 2) as $index => $item)
                                                 <td key={index} class="text-start p-2 text-xs">
-                                                    {{ $item['total_poblacion'] }}</td>
+                                                    {{ numero_formateado($item['total_poblacion']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">Viviendas: </td>
                                             @foreach (array_slice($data['inundaciones'], 0, 2) as $index => $item)
                                                 <td key={index} class="text-start p-2 text-xs">
-                                                    {{ $item['total_vivienda'] }}</td>
+                                                    {{ numero_formateado($item['total_vivienda']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">E. Salud: </td>
                                             @foreach (array_slice($data['inundaciones'], 0, 2) as $index => $item)
                                                 <td key={index} class="text-start p-2 text-xs">
-                                                    {{ $item['total_est_salud'] }}</td>
+                                                    {{ numero_formateado($item['total_est_salud']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">I. Educa.: </td>
                                             @foreach (array_slice($data['inundaciones'], 0, 2) as $index => $item)
                                                 <td key={index} class="text-start p-2 text-xs">
-                                                    {{ $item['total_inst_educativa'] }}</td>
+                                                    {{ numero_formateado($item['total_inst_educativa']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">S. Agrícola: </td>
                                             @foreach (array_slice($data['inundaciones'], 0, 2) as $index => $item)
                                                 <td key={index} class="text-start p-2 text-xs">
-                                                    {{ $item['total_superficie_agricola'] }}</td>
+                                                    {{ numero_formateado($item['total_superficie_agricola']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">Vias (Km): </td>
                                             @foreach (array_slice($data['inundaciones'], 0, 2) as $index => $item)
                                                 <td key={index} class="text-start p-2 text-xs">
-                                                    {{ $item['total_vias'] }}</td>
+                                                    {{ numero_formateado($item['total_vias']) }}</td>
                                             @endforeach
                                         </tr>
 
@@ -183,49 +183,49 @@
                                             <td class="text-start p-2 text-xs">Distritos: </td>
                                             @foreach (array_slice($data['movimiento_masa'], 0, 2) as $index => $item)
                                             <td key={index} class="text-start p-2 text-xs">
-                                                {{ $item['total_distritos'] }}</td>
+                                                {{ numero_formateado($item['total_distritos']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">Población: </td>
                                             @foreach (array_slice($data['movimiento_masa'], 0, 2) as $index => $item)
                                             <td key={index} class="text-start p-2 text-xs">
-                                                {{ $item['total_poblacion'] }}</td>
+                                                {{ numero_formateado($item['total_poblacion']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">Viviendas: </td>
                                             @foreach (array_slice($data['movimiento_masa'], 0, 2) as $index => $item)
                                             <td key={index} class="text-start p-2 text-xs">
-                                                {{ $item['total_vivienda'] }}</td>
+                                                {{ numero_formateado($item['total_vivienda']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">E. Salud: </td>
                                             @foreach (array_slice($data['movimiento_masa'], 0, 2) as $index => $item)
                                             <td key={index} class="text-start p-2 text-xs">
-                                                {{ $item['total_est_salud'] }}</td>
+                                                {{ numero_formateado($item['total_est_salud']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">I. Educa.: </td>
                                             @foreach (array_slice($data['movimiento_masa'], 0, 2) as $index => $item)
                                             <td key={index} class="text-start p-2 text-xs">
-                                                {{ $item['total_inst_educativa'] }}</td>
+                                                {{ numero_formateado($item['total_inst_educativa']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">S. Agrícola: </td>
                                             @foreach (array_slice($data['movimiento_masa'], 0, 2) as $index => $item)
                                             <td key={index} class="text-start p-2 text-xs">
-                                                {{ $item['total_superficie_agricola'] }}</td>
+                                                {{ numero_formateado($item['total_superficie_agricola']) }}</td>
                                             @endforeach
                                         </tr>
                                         <tr class="odd:bg-gray-50">
                                             <td class="text-start p-2 text-xs">Vias (Km): </td>
                                             @foreach (array_slice($data['movimiento_masa'], 0, 2) as $index => $item)
                                             <td key={index} class="text-start p-2 text-xs">
-                                                {{ $item['total_vias'] }}</td>
+                                                {{ numero_formateado($item['total_vias']) }}</td>
                                             @endforeach
                                         </tr>
 

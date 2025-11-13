@@ -107,11 +107,11 @@
                             </div>
 
                             <div class="flex flex-col text-teal-600">
-                                <span class='text-xs mb-4'>Departamentos con poblaion expuesta:</span>
+                                <span class='text-xs mb-4'>Departamentos con población expuesta:</span>
                                 @foreach ($item['departamentos_poblacion'] as $depa)
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs">{{ $depa['departamento'] }}</span>
-                                        <span class='text-xs'>{{ $depa['total_poblacion'] }}</span>
+                                        <span class='text-xs'>{{ numero_formateado($depa['total_poblacion']) }}</span>
                                     </div>
                                 @endforeach
                             </div>
@@ -126,15 +126,15 @@
                             @foreach (array_slice($data, 0, 1) as $index => $item)
                                 <div class="grid gap-3 justify-items-center text-center">
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_distritos'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_distritos']) }}</p>
                                         <p>Distritos</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_poblacion'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
                                         <p>Población</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_vivienda'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
                                         <p>Viviendas</p>
                                     </div>
                                 </div>
@@ -170,15 +170,15 @@
                             @foreach (array_slice($data, 1, 1) as $index => $item)
                                 <div class="grid gap-3 justify-items-center text-center">
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_distritos'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_distritos']) }}</p>
                                         <p>Distritos</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_poblacion'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
                                         <p>Población</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_vivienda'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
                                         <p>Viviendas</p>
                                     </div>
                                 </div>
@@ -205,11 +205,11 @@
                             </div>
 
                             <div class="flex flex-col text-teal-600 mt-4">
-                                <span class='text-xs mb-4'>Departamentos con poblaion expuesta:</span>
+                                <span class='text-xs mb-4'>Departamentos con población expuesta:</span>
                                 @foreach ($item['departamentos_poblacion'] as $depa)
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs">{{ $depa['departamento'] }}</span>
-                                        <span class='text-xs'>{{ $depa['total_poblacion'] }}</span>
+                                        <span class='text-xs'>{{ numero_formateado($depa['total_poblacion']) }}</span>
                                     </div>
                                 @endforeach
                             </div>

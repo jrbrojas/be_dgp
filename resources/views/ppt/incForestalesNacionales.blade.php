@@ -58,7 +58,7 @@
                             @foreach ($item['departamentos_poblacion'] as $depa)
                                 <div class="flex justify-between items-center">
                                     <span class="text-xs">{{ $depa['departamento'] }}</span>
-                                    <span class='text-xs'>{{ $depa['total_poblacion'] }}</span>
+                                    <span class='text-xs'>{{ numero_formateado($depa['total_poblacion']) }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -106,7 +106,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_centro_poblado'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_centro_poblado']) }}</p>
                                     <p class="text-md">Centros poblados</p>
                                 </div>
                             </div>
@@ -120,7 +120,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_poblacion'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
                                     <p class="text-md">Población</p>
                                 </div>
                             </div>
@@ -134,7 +134,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_vivienda'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
                                     <p class="text-md">Viviendas</p>
                                 </div>
                             </div>
@@ -149,7 +149,7 @@
                                     <path d="M9 6h2v2H9zm4 0h2v2h-2zm-4 4h2v2H9zm4 0h2v2h-2z"></path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_inst_educativa'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_inst_educativa']) }}</p>
                                     <p class="text-md">Inst. Educativas</p>
                                 </div>
                             </div>
@@ -166,7 +166,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_est_salud'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}</p>
                                     <p class="text-md">Est. de Salud</p>
                                 </div>
                             </div>
@@ -178,7 +178,7 @@
                                         d="M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.31 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777z" />
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_superficie_agricola'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_superficie_agricola']) }}</p>
                                     <p class="text-md">Sup. Agricola (Ha)</p>
                                 </div>
                             </div>
@@ -189,7 +189,7 @@
                                         d="M80 88C80 74.7 90.7 64 104 64L536 64C549.3 64 560 74.7 560 88C560 101.3 549.3 112 536 112L528 112L528 528L536 528C549.3 528 560 538.7 560 552C560 565.3 549.3 576 536 576L104 576C90.7 576 80 565.3 80 552C80 538.7 90.7 528 104 528L112 528L112 112L104 112C90.7 112 80 101.3 80 88zM288 176L288 208C288 216.8 295.2 224 304 224L336 224C344.8 224 352 216.8 352 208L352 176C352 167.2 344.8 160 336 160L304 160C295.2 160 288 167.2 288 176zM192 160C183.2 160 176 167.2 176 176L176 208C176 216.8 183.2 224 192 224L224 224C232.8 224 240 216.8 240 208L240 176C240 167.2 232.8 160 224 160L192 160zM288 272L288 304C288 312.8 295.2 320 304 320L336 320C344.8 320 352 312.8 352 304L352 272C352 263.2 344.8 256 336 256L304 256C295.2 256 288 263.2 288 272zM416 160C407.2 160 400 167.2 400 176L400 208C400 216.8 407.2 224 416 224L448 224C456.8 224 464 216.8 464 208L464 176C464 167.2 456.8 160 448 160L416 160zM176 272L176 304C176 312.8 183.2 320 192 320L224 320C232.8 320 240 312.8 240 304L240 272C240 263.2 232.8 256 224 256L192 256C183.2 256 176 263.2 176 272zM416 256C407.2 256 400 263.2 400 272L400 304C400 312.8 407.2 320 416 320L448 320C456.8 320 464 312.8 464 304L464 272C464 263.2 456.8 256 448 256L416 256zM352 448L395.8 448C405.7 448 413.3 439 409.8 429.8C396 393.7 361 368 320.1 368C279.2 368 244.2 393.7 230.4 429.8C226.9 439 234.5 448 244.4 448L288.2 448L288.2 528L352.2 528L352.2 448z" />
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_mon_arqueologico'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_mon_arqueologico']) }}</p>
                                     <p class="text-md">Mon. Arqueológicos</p>
                                 </div>
                             </div>

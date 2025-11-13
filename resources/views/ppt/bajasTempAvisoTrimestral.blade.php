@@ -107,7 +107,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_centro_poblado'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_centro_poblado']) }}</p>
                                     <p class="text-md">Centros Poblados</p>
                                 </div>
                             </div>
@@ -121,7 +121,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_poblacion'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
                                     <p class="text-md">Población</p>
                                 </div>
                             </div>
@@ -135,7 +135,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_vivienda'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
                                     <p class="text-md">Viviendas</p>
                                 </div>
                             </div>
@@ -150,7 +150,7 @@
                                     <path d="M9 6h2v2H9zm4 0h2v2h-2zm-4 4h2v2H9zm4 0h2v2h-2z"></path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_inst_educativa'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_inst_educativa']) }}</p>
                                     <p class="text-md">Inst. Educativas</p>
                                 </div>
                             </div>
@@ -167,7 +167,7 @@
                                     </path>
                                 </svg>
                                 <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                    <p class="text-xl font-bold">{{ $item['total_est_salud'] }}</p>
+                                    <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}</p>
                                     <p class="text-md">Est. de Salud</p>
                                 </div>
                             </div>
@@ -190,7 +190,7 @@
                                 @foreach ($item['departamentos_poblacion'] as $depa)
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs">{{ $depa['departamento'] }}</span>
-                                        <span class='text-xs'>{{ $depa['total_poblacion'] }}</span>
+                                        <span class='text-xs'>{{ numero_formateado($depa['total_poblacion']) }}</span>
                                     </div>
                                 @endforeach
                             </div>

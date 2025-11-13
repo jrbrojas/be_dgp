@@ -132,7 +132,7 @@
                                 @foreach ($item['departamentos_poblacion'] as $depa)
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs">{{ $depa['departamento'] }}</span>
-                                        <span class='text-xs'>{{ $depa['total_poblacion'] }}</span>
+                                        <span class='text-xs'>{{ numero_formateado($depa['total_poblacion']) }}</span>
                                     </div>
                                 @endforeach
                             </div>

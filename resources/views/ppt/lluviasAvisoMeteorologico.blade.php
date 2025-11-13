@@ -102,11 +102,11 @@
                             </div>
 
                             <div class="flex flex-col text-teal-600 mt-4 font-bold">
-                                <span class='text-xs mb-4'>Departamentos con poblaion expuesta:</span>
+                                <span class='text-xs mb-4'>Departamentos con población expuesta:</span>
                                 @foreach ($item['departamentos_poblacion'] as $depa)
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs">{{ $depa['departamento'] }}</span>
-                                        <span class='text-xs'>{{ $depa['total_poblacion'] }}</span>
+                                        <span class='text-xs'>{{ numero_formateado($depa['total_poblacion']) }}</span>
                                     </div>
                                 @endforeach
                             </div>
@@ -122,24 +122,24 @@
                                 <div class="grid gap-3 justify-items-center text-center">
                                     <div>
                                         <p class="text-xl font-bold">
-                                            {{ $tipo == 'inundaciones' ? $item['total_centro_poblado'] : $item['total_distritos'] }}
+                                            {{ $tipo == 'inundaciones' ? numero_formateado($item['total_centro_poblado']) : numero_formateado($item['total_distritos']) }}
                                         </p>
                                         <p>{{ $tipo == 'inundaciones' ? 'Centros Poblados' : 'Distritos' }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_poblacion'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
                                         <p>Población</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_vivienda'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
                                         <p>Viviendas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_inst_educativa'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_inst_educativa']) }}</p>
                                         <p>Inst. Educativas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_est_salud'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}</p>
                                         <p>Est. Salud</p>
                                     </div>
                                 </div>
@@ -194,24 +194,24 @@
                                 <div class="grid gap-3 justify-items-center text-center">
                                     <div>
                                         <p class="text-xl font-bold">
-                                            {{ $tipo == 'inundaciones' ? $item['total_centro_poblado'] : $item['total_distritos'] }}
+                                            {{ $tipo == 'inundaciones' ? numero_formateado($item['total_centro_poblado']) : numero_formateado($item['total_distritos']) }}
                                         </p>
                                         <p>{{ $tipo == 'inundaciones' ? 'Centros Poblados' : 'Distritos' }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_poblacion'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
                                         <p>Población</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_vivienda'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
                                         <p>Viviendas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_inst_educativa'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_inst_educativa']) }}</p>
                                         <p>Inst. Educativas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ $item['total_est_salud'] }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}</p>
                                         <p>Est. Salud</p>
                                     </div>
                                 </div>
@@ -237,11 +237,11 @@
                             </div>
 
                             <div class="flex flex-col text-teal-600 mt-4 font-bold">
-                                <span class='text-xs mb-4'>Departamentos con poblaion expuesta:</span>
+                                <span class='text-xs mb-4'>Departamentos con población expuesta:</span>
                                 @foreach ($item['departamentos_poblacion'] as $depa)
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs">{{ $depa['departamento'] }}</span>
-                                        <span class='text-xs'>{{ $depa['total_poblacion'] }}</span>
+                                        <span class='text-xs'>{{ numero_formateado($depa['total_poblacion']) }}</span>
                                     </div>
                                 @endforeach
                             </div>

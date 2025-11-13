@@ -25,6 +25,12 @@
 <body>
 
     @php
+        $indexMapa = [
+            'sismos' => 0,
+            'tsunamis' => 1,
+            'glaciares' => 2,
+            'movimiento_masa' => 3,
+        ];
 
         $nivelColorClasses = [
             'MUY ALTO' => 'text-red-500 bg-red-500',
@@ -58,7 +64,7 @@
                 </div>
 
                 @if ($escenario->mapas)
-                    <x-image src="{{ $mapaIzquierdo[0] ? $mapaIzquierdo[0]->ruta : null }}" />
+                    <x-image src="{{ $mapaIzquierdo[$indexMapa] ? $mapaIzquierdo[$indexMapa]->ruta : null }}" />
                 @endif
 
                 <div class='w-full flex items-center gap-2'>
@@ -93,7 +99,7 @@
 
                 <div class='w-full flex justify-center items-center'>
                     @if ($escenario->mapas)
-                        <x-image src="{{ $mapaCentro[0] ? $mapaCentro[0]->ruta : null }}" />
+                        <x-image src="{{ $mapaCentro[$indexMapa] ? $mapaCentro[$indexMapa]->ruta : null }}" />
                     @endif
                 </div>
 
@@ -113,7 +119,7 @@
                                         </path>
                                     </svg>
                                     <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                        <p class="text-lg font-bold">{{ $item['total_poblacion'] }}</p>
+                                        <p class="text-lg font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
                                         <p class="text-md">Población</p>
                                     </div>
                                 </div>
@@ -128,7 +134,7 @@
                                         </path>
                                     </svg>
                                     <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                        <p class="text-lg font-bold">{{ $item['total_distritos'] }}</p>
+                                        <p class="text-lg font-bold">{{ numero_formateado($item['total_distritos']) }}</p>
                                         <p class="text-md">Distritos</p>
                                     </div>
                                 </div>
@@ -142,7 +148,7 @@
                                         </path>
                                     </svg>
                                     <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                        <p class="text-lg font-bold">{{ $item['total_vivienda'] }}</p>
+                                        <p class="text-lg font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
                                         <p class="text-md">Viviendas</p>
                                     </div>
                                 </div>
@@ -157,7 +163,7 @@
                                         <path d="M9 6h2v2H9zm4 0h2v2h-2zm-4 4h2v2H9zm4 0h2v2h-2z"></path>
                                     </svg>
                                     <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                        <p class="text-lg font-bold">{{ $item['total_inst_educativa'] }}
+                                        <p class="text-lg font-bold">{{ numero_formateado($item['total_inst_educativa']) }}
                                         </p>
                                         <p class="text-md">Inst. Educativas</p>
                                     </div>
@@ -175,7 +181,7 @@
                                         </path>
                                     </svg>
                                     <div class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                        <p class="text-lg font-bold">{{ $item['total_est_salud'] }}</p>
+                                        <p class="text-lg font-bold">{{ numero_formateado($item['total_est_salud']) }}</p>
                                         <p class="text-md">Est. de Salud</p>
                                     </div>
                                 </div>
@@ -195,17 +201,17 @@
                                     <div class='flex flex-col gap-2 items-start'>
                                         <div class='flex-1 flex gap-2 font-semibold items-center text-teal-600'>
                                             <p class="text-lg font-bold">
-                                                {{ $item['total_red_vial_nacional'] }}</p>
+                                                {{ numero_formateado($item['total_red_vial_nacional']) }}</p>
                                             <p class="text-md">Red Vial Nacional</p>
                                         </div>
                                         <div class='flex-1 flex gap-2 font-semibold items-center text-teal-600'>
                                             <p class="text-lg font-bold">
-                                                {{ $item['total_red_vial_departamental'] }}</p>
+                                                {{ numero_formateado($item['total_red_vial_departamental']) }}</p>
                                             <p class="text-md">Red Vial Departamental</p>
                                         </div>
                                         <div class='flex-1 flex gap-2 font-semibold items-center text-teal-600'>
                                             <p class="text-lg font-bold">
-                                                {{ $item['total_red_vial_vecinal'] }}
+                                                {{ numero_formateado($item['total_red_vial_vecinal']) }}
                                             </p>
                                             <p class="text-md">Red Vial Vecinal</p>
                                         </div>
@@ -219,7 +225,7 @@
                                     </svg>
                                     <div
                                         class='flex-1 flex flex-col gap-1 font-semibold text-center text-teal-600'>
-                                        <p class="text-lg font-bold">{{ $item['total_red_agua'] }}</p>
+                                        <p class="text-lg font-bold">{{ numero_formateado($item['total_red_agua']) }}</p>
                                         <p class="text-md">Red de Agua Potable (Tuberias)</p>
                                     </div>
                                 </div>
