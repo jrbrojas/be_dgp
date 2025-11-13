@@ -63,7 +63,6 @@
                         <h3 class='text-sm text-center font-bold text-green-600/70'>
                             {{ $escenario->subtitulo }}
                         </h3>
-                        @endforeach
                     </div>
 
                     <div class='w-full flex flex-col items-center justify-center'>
