@@ -67,10 +67,7 @@ class PlantillaA extends Model
     {
 
         $inundaciones = DB::table('plantilla_a as pla')
-            ->leftJoin('centro_poblados as cp', function ($join) {
-                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'INU_CP');
-            })
-            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_cp', DB::raw('LEFT(pla.cod_cp, 6)'), '=', 'dr_cp.codigo')
             ->leftJoin('distritos as dr_alt', function ($join) {
                 $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'INU_CP');
             })
@@ -94,8 +91,7 @@ class PlantillaA extends Model
                         SELECT COALESCE(d2.nombre) AS departamento,
                         SUM(p.poblacion) AS total_poblacion
                         FROM plantilla_a p
-                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
-                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN distritos dr2 ON LEFT(p.cod_cp, 6) = dr2.codigo
                         LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
                         LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
                         WHERE p.escenario_id = ?
@@ -188,10 +184,7 @@ class PlantillaA extends Model
     public static function getByFormularioAvisoTrimestral(Escenario $escenario)
     {
         $inundaciones = DB::table('plantilla_a as pla')
-            ->leftJoin('centro_poblados as cp', function ($join) {
-                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'TRI_LLUVIAS_CP');
-            })
-            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_cp', DB::raw('LEFT(pla.cod_cp, 6)'), '=', 'dr_cp.codigo')
             ->leftJoin('distritos as dr_alt', function ($join) {
                 $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'TRI_LLUVIAS_CP');
             })
@@ -216,8 +209,7 @@ class PlantillaA extends Model
                         SELECT COALESCE(d2.nombre) AS departamento,
                         SUM(p.poblacion) AS total_poblacion
                         FROM plantilla_a p
-                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
-                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN distritos dr2 ON LEFT(p.cod_cp, 6) = dr2.codigo
                         LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
                         LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
                         WHERE p.escenario_id = ?
@@ -249,10 +241,7 @@ class PlantillaA extends Model
             });
 
         $movimiento_masa = DB::table('plantilla_a as pla')
-            ->leftJoin('centro_poblados as cp', function ($join) {
-                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'TRI_LLUVIAS_CP');
-            })
-            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_cp', DB::raw('LEFT(pla.cod_cp, 6)'), '=', 'dr_cp.codigo')
             ->leftJoin('distritos as dr_alt', function ($join) {
                 $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'TRI_LLUVIAS_CP');
             })
@@ -276,8 +265,7 @@ class PlantillaA extends Model
                         SELECT COALESCE(d2.nombre) AS departamento,
                         SUM(p.poblacion) AS total_poblacion
                         FROM plantilla_a p
-                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
-                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN distritos dr2 ON LEFT(p.cod_cp, 6) = dr2.codigo
                         LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
                         LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
                         WHERE p.escenario_id = ?
@@ -450,10 +438,7 @@ class PlantillaA extends Model
     {
         // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
-            ->leftJoin('centro_poblados as cp', function ($join) {
-                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'TRI_DT_CP');
-            })
-            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            ->leftJoin('distritos as dr_cp', DB::raw('LEFT(pla.cod_cp, 6)'), '=', 'dr_cp.codigo')
             ->leftJoin('distritos as dr_alt', function ($join) {
                 $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'TRI_DT_CP');
             })
@@ -477,8 +462,7 @@ class PlantillaA extends Model
                         SELECT COALESCE(d2.nombre) AS departamento,
                         SUM(p.poblacion) AS total_poblacion
                         FROM plantilla_a p
-                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
-                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN distritos dr2 ON LEFT(p.cod_cp, 6) = dr2.codigo
                         LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
                         LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
                         WHERE p.escenario_id = ?
@@ -578,10 +562,10 @@ class PlantillaA extends Model
     {
         // solo para formulario Lluvias Meteorologico
         $inundaciones = DB::table('plantilla_a as pla')
-            ->leftJoin('centro_poblados as cp', function ($join) {
-                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'IF_NAC_CP');
-            })
-            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            // ->leftJoin('centro_poblados as cp', function ($join) {
+            //     $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'IF_NAC_CP');
+            // })
+            ->leftJoin('distritos as dr_cp', DB::raw('LEFT(pla.cod_cp, 6)'), '=', 'dr_cp.codigo')
             ->leftJoin('distritos as dr_alt', function ($join) {
                 $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'IF_NAC_CP');
             })
@@ -607,8 +591,7 @@ class PlantillaA extends Model
                         SELECT COALESCE(d2.nombre) AS departamento,
                         SUM(p.poblacion) AS total_poblacion
                         FROM plantilla_a p
-                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
-                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN distritos dr2 ON LEFT(p.cod_cp, 6) = dr2.codigo
                         LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
                         LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
                         WHERE p.escenario_id = ?
@@ -648,10 +631,10 @@ class PlantillaA extends Model
     public static function getByFormularioIncForestalesRegionales(Escenario $escenario)
     {
         $inundaciones = DB::table('plantilla_a as pla')
-            ->leftJoin('centro_poblados as cp', function ($join) {
-                $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'IF_DEP_CP');
-            })
-            ->leftJoin('distritos as dr_cp', 'cp.distrito_id', '=', 'dr_cp.id')
+            // ->leftJoin('centro_poblados as cp', function ($join) {
+            //     $join->on('pla.cod_cp', '=', 'cp.codigo')->where('pla.tipo', '=', 'IF_DEP_CP');
+            // })
+            ->leftJoin('distritos as dr_cp', DB::raw('LEFT(pla.cod_cp, 6)'), '=', 'dr_cp.codigo')
             ->leftJoin('distritos as dr_alt', function ($join) {
                 $join->on('pla.cod_ubigeo', '=', 'dr_alt.codigo')->where('pla.tipo', '<>', 'IF_DEP_CP');
             })
@@ -676,8 +659,7 @@ class PlantillaA extends Model
                         SELECT COALESCE(d2.nombre) AS departamento,
                         SUM(p.poblacion) AS total_poblacion
                         FROM plantilla_a p
-                        LEFT JOIN centro_poblados c2 ON p.cod_cp = c2.codigo
-                        LEFT JOIN distritos dr2 ON c2.distrito_id = dr2.id
+                        LEFT JOIN distritos dr2 ON LEFT(p.cod_cp, 6) = dr2.codigo
                         LEFT JOIN provincias pr2 ON dr2.provincia_id = pr2.id
                         LEFT JOIN departamentos d2 ON pr2.departamento_id = d2.id
                         WHERE p.escenario_id = ?

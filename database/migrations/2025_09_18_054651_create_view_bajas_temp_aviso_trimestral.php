@@ -21,8 +21,8 @@ return new class extends Migration
                 CASE WHEN pla.tipo = 'TRI_DT_CP' THEN pr1.nombre ELSE pr2.nombre END AS provincia,
                 CASE WHEN pla.tipo = 'TRI_DT_CP' THEN dr1.nombre ELSE dr2.nombre END AS distrito
             FROM public.plantilla_a pla
-                LEFT JOIN centro_poblados cp ON pla.tipo = 'TRI_DT_CP' AND pla.cod_cp = cp.codigo
-                LEFT JOIN distritos dr1 ON cp.distrito_id = dr1.id
+                -- LEFT JOIN centro_poblados cp ON pla.tipo = 'TRI_DT_CP' AND pla.cod_cp = cp.codigo
+                LEFT JOIN distritos dr1 ON LEFT(pla.cod_cp, 6) = dr1.codigo
                 LEFT JOIN provincias pr1 ON dr1.provincia_id = pr1.id
                 LEFT JOIN departamentos d1 ON pr1.departamento_id = d1.id
                 LEFT JOIN distritos dr2 ON pla.tipo <> 'TRI_DT_CP' AND pla.cod_ubigeo = dr2.codigo
