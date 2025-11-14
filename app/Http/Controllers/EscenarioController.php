@@ -263,14 +263,14 @@ class EscenarioController extends Controller
         $ppt->setLayout($layout);
 
         if ($escenario->formulario_id == 3) {
-            // $chromeUserDir  = storage_path('app/chrome-user');
-            // $chromeDataDir  = storage_path('app/chrome-data');
-            // $chromeCacheDir = storage_path('app/chrome-cache');
+            $chromeUserDir  = storage_path('app/chrome-user');
+            $chromeDataDir  = storage_path('app/chrome-data');
+            $chromeCacheDir = storage_path('app/chrome-cache');
 
-            // // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
-            // putenv('HOME=' . storage_path('app'));
-            // putenv('XDG_CONFIG_HOME=' . storage_path('app'));
-            // putenv('XDG_CACHE_HOME=' . storage_path('app'));
+            // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
+            putenv('HOME=' . storage_path('app'));
+            putenv('XDG_CONFIG_HOME=' . storage_path('app'));
+            putenv('XDG_CACHE_HOME=' . storage_path('app'));
 
             $html = view($formulario[$escenario->formulario_id], compact('escenario', 'plantillas'))->render();
 
@@ -278,20 +278,20 @@ class EscenarioController extends Controller
             $pngPath = storage_path("app/tmp/{$pngName}");
             @mkdir(dirname($pngPath), 0775, true);
 
-            // Browsershot::html($html)
-            //     ->setChromePath('/usr/bin/chromium')
-            //     ->setNodeBinary('/usr/bin/node')
-            //     ->setNpmBinary('/usr/bin/npm')
-            //     ->windowSize(1280, 720)
-            //     ->addChromiumArguments([
-            //         '--no-sandbox',
-            //         '--disable-gpu',
-            //         '--disable-dev-shm-usage',
-            //     ])
-            //     ->deviceScaleFactor(3)
-            //     ->timeout(120)
-            //     ->waitUntilNetworkIdle()
-            //     ->save($pngPath);
+            Browsershot::html($html)
+                ->setChromePath('/usr/bin/chromium')
+                ->setNodeBinary('/usr/bin/node')
+                ->setNpmBinary('/usr/bin/npm')
+                ->windowSize(1280, 720)
+                ->addChromiumArguments([
+                    '--no-sandbox',
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                ])
+                ->deviceScaleFactor(3)
+                ->timeout(120)
+                ->waitUntilNetworkIdle()
+                ->save($pngPath);
 
             // se usa en produccion
             // Browsershot::html($html)
@@ -319,13 +319,13 @@ class EscenarioController extends Controller
             //     ->save($pngPath);
 
             // para usar localmente (dev)
-            Browsershot::html($html)
-                ->select('#capture')
-                ->windowSize(1280, 720)
-                ->deviceScaleFactor(3)
-                ->waitUntilNetworkIdle()
-                ->timeout(60)
-                ->save($pngPath);
+            // Browsershot::html($html)
+            //     ->select('#capture')
+            //     ->windowSize(1280, 720)
+            //     ->deviceScaleFactor(3)
+            //     ->waitUntilNetworkIdle()
+            //     ->timeout(60)
+            //     ->save($pngPath);
 
             // Crear una diapositiva (solo la primera usa getActiveSlide())
             $slide = $ppt->getActiveSlide();
@@ -358,14 +358,14 @@ class EscenarioController extends Controller
             // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
             foreach ($plantillas as $tipo => $data) {
 
-                // $chromeUserDir  = storage_path('app/chrome-user');
-                // $chromeDataDir  = storage_path('app/chrome-data');
-                // $chromeCacheDir = storage_path('app/chrome-cache');
+                $chromeUserDir  = storage_path('app/chrome-user');
+                $chromeDataDir  = storage_path('app/chrome-data');
+                $chromeCacheDir = storage_path('app/chrome-cache');
 
-                // // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
-                // putenv('HOME=' . storage_path('app'));
-                // putenv('XDG_CONFIG_HOME=' . storage_path('app'));
-                // putenv('XDG_CACHE_HOME=' . storage_path('app'));
+                // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
+                putenv('HOME=' . storage_path('app'));
+                putenv('XDG_CONFIG_HOME=' . storage_path('app'));
+                putenv('XDG_CACHE_HOME=' . storage_path('app'));
 
                 $html = view($formulario[$escenario->formulario_id], compact('escenario', 'data', 'tipo'))->render();
 
@@ -373,20 +373,20 @@ class EscenarioController extends Controller
                 $pngPath = storage_path("app/tmp/{$pngName}");
                 @mkdir(dirname($pngPath), 0775, true);
 
-                // Browsershot::html($html)
-                //     ->setChromePath('/usr/bin/chromium')
-                //     ->setNodeBinary('/usr/bin/node')
-                //     ->setNpmBinary('/usr/bin/npm')
-                //     ->addChromiumArguments([
-                //         '--no-sandbox',
-                //         '--disable-gpu',
-                //         '--disable-dev-shm-usage',
-                //     ])
-                //     ->windowSize(1280, 720)
-                //     ->deviceScaleFactor(3)
-                //     ->timeout(120)
-                //     ->waitUntilNetworkIdle()
-                //     ->save($pngPath);
+                Browsershot::html($html)
+                    ->setChromePath('/usr/bin/chromium')
+                    ->setNodeBinary('/usr/bin/node')
+                    ->setNpmBinary('/usr/bin/npm')
+                    ->addChromiumArguments([
+                        '--no-sandbox',
+                        '--disable-gpu',
+                        '--disable-dev-shm-usage',
+                    ])
+                    ->windowSize(1280, 720)
+                    ->deviceScaleFactor(3)
+                    ->timeout(120)
+                    ->waitUntilNetworkIdle()
+                    ->save($pngPath);
 
                 // se usa en produccion
                 // Browsershot::html($html)
@@ -414,13 +414,13 @@ class EscenarioController extends Controller
                 //     ->save($pngPath);
 
                 // para usar localmente (dev)
-                Browsershot::html($html)
-                    ->select('#capture')
-                    ->windowSize(1280, 720)
-                    ->deviceScaleFactor(3)
-                    ->waitUntilNetworkIdle()
-                    ->timeout(60)
-                    ->save($pngPath);
+                // Browsershot::html($html)
+                //     ->select('#capture')
+                //     ->windowSize(1280, 720)
+                //     ->deviceScaleFactor(3)
+                //     ->waitUntilNetworkIdle()
+                //     ->timeout(60)
+                //     ->save($pngPath);
 
                 // Crear una diapositiva (solo la primera usa getActiveSlide())
                 $slide = ($tipo === 'inundaciones')
