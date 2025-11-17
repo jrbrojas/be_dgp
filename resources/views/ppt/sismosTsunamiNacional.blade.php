@@ -48,7 +48,6 @@
 
         $mapaIzquierdo = $escenario->mapas->where('tipo', 'mapa_izquierdo')->values();
         $mapaCentro = $escenario->mapas->where('tipo', 'mapa_centro')->values();
-
     @endphp
 
     <div id="capture" class="p-2">
@@ -64,7 +63,7 @@
                 </div>
 
                 @if ($escenario->mapas)
-                    <x-image src="{{ $mapaIzquierdo[$indexMapa] ? $mapaIzquierdo[$indexMapa]->ruta : null }}" />
+                    <x-image src="{{ $mapaIzquierdo[$indexMapa[$tipo]] ? $mapaIzquierdo[$indexMapa[$tipo]]->ruta : null }}" />
                 @endif
 
                 <div class='w-full flex items-center gap-2'>
@@ -99,7 +98,7 @@
 
                 <div class='w-full flex justify-center items-center'>
                     @if ($escenario->mapas)
-                        <x-image src="{{ $mapaCentro[$indexMapa] ? $mapaCentro[$indexMapa]->ruta : null }}" />
+                        <x-image src="{{ $mapaCentro[$indexMapa[$tipo]] ? $mapaCentro[$indexMapa[$tipo]]->ruta : null }}" />
                     @endif
                 </div>
 
