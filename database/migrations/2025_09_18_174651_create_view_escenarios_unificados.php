@@ -17,7 +17,7 @@ return new class extends Migration
             "CREATE VIEW escenarios_unificados AS
                 SELECT
                 1::int AS formulario_id,
-                'LLuvias'::text AS fenomeno,
+                'Lluvias'::text AS fenomeno,
                 'Meteorológico'::text AS pronostico,
                 CASE
                     WHEN f1.tipo IN ('INU_CP', 'INU_IE', 'INU_ES') THEN 'Inundaciones'
@@ -37,12 +37,12 @@ return new class extends Migration
                     'Lluvias' AS fenomeno,
                     'Trimestral' as pronostico,
                     CASE
-                    WHEN f2.tipo IN ('TRI_LLUVIAS_CP', 'TRI_LLUVIAS_ES', 'TRI_LLUVIAS_IE') THEN 'Inundaciones'
-                    ELSE 'Mov. Masa'
+                        WHEN f2.nivel_exposicion_2_inu IS NOT NULL THEN 'Inundaciones'
+                        ELSE 'Mov. Masa'
                     END AS peligro,
                     CASE
-                    WHEN f2.tipo IN ('TRI_LLUVIAS_CP', 'TRI_LLUVIAS_ES', 'TRI_LLUVIAS_IE') THEN f2.nivel_exposicion_2_inu
-                    ELSE f2.nivel_exposicion_1_mm
+                        WHEN f2.nivel_exposicion_2_inu IS NOT NULL THEN f2.nivel_exposicion_2_inu
+                        ELSE f2.nivel_exposicion_1_mm
                     END AS nivel,
                     f2.*
                 FROM lluvias_aviso_trimestral f2
@@ -54,7 +54,7 @@ return new class extends Migration
                     'Lluvias' AS fenomeno,
                     'Climatica' as pronostico,
                     CASE
-                    WHEN f3.tipo IN ('CLI_INU') THEN 'Inundaciones' ELSE 'Mov. Masa'
+                        WHEN f3.tipo IN ('CLI_INU') THEN 'Inundaciones' ELSE 'Mov. Masa'
                     END AS peligro,
                     f3.nivel_riesgo AS nivel,
                     f3.*

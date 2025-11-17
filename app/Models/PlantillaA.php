@@ -314,14 +314,14 @@ class PlantillaA extends Model
             ->where('pla.tipo', 'CLI_INU')
             ->selectRaw("
                 pla.nivel_riesgo AS nivel,
+                COUNT(DISTINCT dr.id) AS total_distritos,
                 SUM(pla.poblacion) AS total_poblacion,
                 SUM(pla.vivienda) AS total_vivienda,
                 SUM(pla.es) AS total_est_salud,
                 SUM(pla.ie) AS total_inst_educativa,
                 SUM(pla.vias) AS total_vias,
                 SUM(pla.superficie_agricola) AS total_superficie_agricola,
-                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos,
-                COUNT(DISTINCT dr.id) AS total_distritos
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
             ")
             ->whereNotNull('pla.nivel_riesgo')
             ->groupBy('pla.nivel_riesgo')
@@ -345,14 +345,14 @@ class PlantillaA extends Model
             ->where('pla.tipo', 'CLI_MM')
             ->selectRaw("
                 pla.nivel_riesgo AS nivel,
+                COUNT(DISTINCT dr.id) AS total_distritos,
                 SUM(pla.poblacion) AS total_poblacion,
                 SUM(pla.vivienda) AS total_vivienda,
                 SUM(pla.es) AS total_est_salud,
                 SUM(pla.ie) AS total_inst_educativa,
                 SUM(pla.vias) AS total_vias,
                 SUM(pla.superficie_agricola) AS total_superficie_agricola,
-                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos,
-                COUNT(DISTINCT dr.id) AS total_distritos
+                ARRAY_AGG(DISTINCT COALESCE(d.nombre)) AS departamentos
             ")
             ->whereNotNull('pla.nivel_riesgo')
             ->groupBy('pla.nivel_riesgo')
