@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('aviso')->nullable();
             $table->string('url_base');
             $table->string('plantilla_subida')->nullable();
-            $table->string('excel')->nullable();
+            $table->string('excel_adjunto')->nullable();
             $table->timestamps();
         });
     }

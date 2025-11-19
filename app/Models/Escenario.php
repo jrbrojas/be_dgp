@@ -21,7 +21,7 @@ class Escenario extends Model
         'aviso',
         'url_base',
         'plantilla_subida',
-        'excel',
+        'excel_adjunto',
     ];
 
     protected function casts(): array

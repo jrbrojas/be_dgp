@@ -40,7 +40,7 @@ class EscenarioController extends Controller
 
     public function show(Escenario $escenario)
     {
-        $escenario->excel = asset('storage/' . $escenario->excel);
+        $escenario->excel_adjunto = asset('storage/' . $escenario->excel_adjunto);
         $data = Escenario::getByFormulario($escenario);
         $instrumentos = VistaInstrumentos::instrumentosPorNivel($data);
 
@@ -54,7 +54,7 @@ class EscenarioController extends Controller
     public function showPI(Request $request)
     {
         $escenario = Escenario::where('formulario_id', $request->formulario)->orderBy('id', 'desc')->first();
-        $escenario->excel = asset('storage/' . $escenario->excel);
+        $escenario->excel_adjunto = asset('storage/' . $escenario->excel_adjunto);
         $data = $escenario ? Escenario::getByFormulario($escenario) : [];
         $instrumentos = VistaInstrumentos::instrumentosPorNivel($data);
 
@@ -67,30 +67,46 @@ class EscenarioController extends Controller
 
     public function store(EscenarioStoreRequest $request)
     {
-        $imagenMapas = [
-            'mapa_derecho',
-            'mapa_centro',
-            'mapa_izquierdo',
-            'mapa_izquierdo_superior',
-            'mapa_izquierdo_inferior',
+        $camposFile = [
+            'imagen_derecho_inu',
+            'imagen_derecho_mm',
+            'imagen_derecho_bt',
+            'imagen_centro_inu',
+            'imagen_centro_mm',
+            'imagen_centro_bt',
+            'imagen_centro_inc',
+            'imagen_centro_sismo',
+            'imagen_centro_tsunami',
+            'imagen_centro_glaciar',
+            'imagen_izquierdo_inu',
+            'imagen_izquierdo_mm',
+            'imagen_izquierdo_bt',
+            'imagen_izquierdo_inc',
+            'imagen_izquierdo_sismo',
+            'imagen_izquierdo_tsunami',
+            'imagen_izquierdo_glaciar',
+            'imagen_izquierdo_superior_inu',
+            'imagen_izquierdo_superior_mm',
+            'imagen_izquierdo_superior_bt',
+            'imagen_izquierdo_inferior_inu',
+            'imagen_izquierdo_inferior_mm',
+            'imagen_izquierdo_inferior_bt',
         ];
 
         $data = $request->validated();
-        $escenario = DB::transaction(function () use ($request, $data, $imagenMapas) {
+        $escenario = DB::transaction(function () use ($request, $data, $camposFile) {
             $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
-            $data['excel'] = $this->storeFile($request->file('excel'), 'public');
+            $data['excel_adjunto'] = $this->storeFile($request->file('excel_adjunto'), 'public');
             $escenarioData = Escenario::create($data);
 
-            foreach ($imagenMapas as $campo) {
-                if ($request->hasFile($campo)) {
-                    foreach ($request->file($campo) as $file) {
-                        $ruta = $this->storeFile($file, 'public');
-                        Mapa::create([
-                            'escenario_id' => $escenarioData->id,
-                            'tipo' => $campo, // << Agrega un campo "tipo" para identificar el mapa
-                            'ruta' => $ruta,  // Asegúrate de tener un campo "ruta" en la tabla
-                        ]);
-                    }
+            foreach ($camposFile as $tipo) {
+                if ($request->hasFile($tipo)) {
+                    $ruta = $this->storeFile($request->file($tipo), 'public');
+                    Mapa::create([
+                        'escenario_id' => $escenarioData->id, // << Agrega un campo "tipo" para identificar el mapa
+                        'tipo' => $tipo, // << Agrega un campo "tipo" para identificar el mapa
+                        'ruta' => $ruta,  // Asegúrate de tener un campo "ruta" en la tabla
+                    ]);
                 }
             }
 
@@ -110,22 +126,41 @@ class EscenarioController extends Controller
 
     public function update(EscenarioStoreRequest $request, Escenario $escenario)
     {
-        $imagenMapas = [
-            'mapa_derecho',
-            'mapa_centro',
-            'mapa_izquierdo',
-            'mapa_izquierdo_superior',
-            'mapa_izquierdo_inferior',
+        Log::info($request->all());
+        $camposFile = [
+            'imagen_derecho_inu',
+            'imagen_derecho_mm',
+            'imagen_derecho_bt',
+            'imagen_centro_inu',
+            'imagen_centro_mm',
+            'imagen_centro_bt',
+            'imagen_centro_inc',
+            'imagen_centro_sismo',
+            'imagen_centro_tsunami',
+            'imagen_centro_glaciar',
+            'imagen_izquierdo_inu',
+            'imagen_izquierdo_mm',
+            'imagen_izquierdo_bt',
+            'imagen_izquierdo_inc',
+            'imagen_izquierdo_sismo',
+            'imagen_izquierdo_tsunami',
+            'imagen_izquierdo_glaciar',
+            'imagen_izquierdo_superior_inu',
+            'imagen_izquierdo_superior_mm',
+            'imagen_izquierdo_superior_bt',
+            'imagen_izquierdo_inferior_inu',
+            'imagen_izquierdo_inferior_mm',
+            'imagen_izquierdo_inferior_bt',
         ];
 
         $data = $request->validated();
 
-        if ($request->file('excel')) {
-            $urlExcel = $this->storeFile($request->file('excel'), 'public');
-            if (!empty($escenario->excel)) {
-                $this->deleteFile($escenario->excel);
+        if ($request->file('excel_adjunto')) {
+            $urlExcel = $this->storeFile($request->file('excel_adjunto'), 'public');
+            if (!empty($escenario->excel_adjunto)) {
+                $this->deleteFile($escenario->excel_adjunto);
             }
-            $data['excel'] = $urlExcel;
+            $data['excel_adjunto'] = $urlExcel;
         }
 
         if ($request->file('plantilla')) {
@@ -157,20 +192,20 @@ class EscenarioController extends Controller
             $escenario->update($data);
         }
 
-        foreach ($imagenMapas as $tipo) {
+        foreach ($camposFile as $tipo) {
+
             if ($request->hasFile($tipo)) {
-                $imagenesAntiguas = $escenario->mapas()->where('tipo', $tipo)->get();
-                foreach ($imagenesAntiguas as $imagen) {
-                    $this->deleteFile($imagen->ruta, 'public');
-                    $imagen->delete();
+                $imagenAntigua = $escenario->mapas()->where('tipo', $tipo)->first();
+                if ($imagenAntigua) {
+                    $this->deleteFile($imagenAntigua->ruta, 'public');
+                    $imagenAntigua->delete();
                 }
-                foreach ($request->file($tipo) as $file) {
-                    $ruta = $this->storeFile($file, 'public');
-                    $escenario->mapas()->create([
-                        'tipo' => $tipo,
-                        'ruta' => $ruta,
-                    ]);
-                }
+
+                $ruta = $this->storeFile($request->file($tipo), 'public');
+                $escenario->mapas()->create([
+                    'tipo' => $tipo,
+                    'ruta' => $ruta,
+                ]);
             }
         }
 
@@ -179,27 +214,38 @@ class EscenarioController extends Controller
 
     public function destroy(Request $request, Escenario $escenario)
     {
-        return DB::transaction(function () use ($escenario) {
-            if ($escenario->plantilla_subida) {
-                $this->deleteFile($escenario->plantilla_subida);
-            }
+        $camposFile = [
+            'imagen_derecho_inu',
+            'imagen_derecho_mm',
+            'imagen_derecho_bt',
+            'imagen_centro_inu',
+            'imagen_centro_mm',
+            'imagen_centro_bt',
+            'imagen_centro_inc',
+            'imagen_centro_sismo',
+            'imagen_centro_tsunami',
+            'imagen_centro_glaciar',
+            'imagen_izquierdo_inu',
+            'imagen_izquierdo_mm',
+            'imagen_izquierdo_bt',
+            'imagen_izquierdo_inc',
+            'imagen_izquierdo_sismo',
+            'imagen_izquierdo_tsunami',
+            'imagen_izquierdo_glaciar',
+            'imagen_izquierdo_superior_inu',
+            'imagen_izquierdo_superior_mm',
+            'imagen_izquierdo_superior_bt',
+            'imagen_izquierdo_inferior_inu',
+            'imagen_izquierdo_inferior_mm',
+            'imagen_izquierdo_inferior_bt',
+        ];
 
-            if ($escenario->excel) {
-                $this->deleteFile($escenario->excel);
+        return DB::transaction(function () use ($escenario, $camposFile) {
+            foreach ($camposFile as $campo) {
+                if (!empty($escenario->{$campo})) {
+                    $this->deleteFile($escenario->{$campo});
+                }
             }
-
-            if ($escenario->mapa_centro) {
-                $this->deleteFile($escenario->mapa_centro);
-            }
-
-            if ($escenario->mapa_izquierdo) {
-                $this->deleteFile($escenario->mapa_izquierdo);
-            }
-
-            if ($escenario->mapa_derecho) {
-                $this->deleteFile($escenario->mapa_derecho);
-            }
-
             $escenario->delete();
             return response()->json(['message' => 'Escenario eliminado exitosamente!']);
         });
@@ -231,7 +277,7 @@ class EscenarioController extends Controller
 
     public function excel(Request $request, Escenario $escenario)
     {
-        $path = $escenario->excel;
+        $path = $escenario->excel_adjunto;
 
         if (!Storage::disk('public')->exists($path)) {
             abort(404);
@@ -327,7 +373,6 @@ class EscenarioController extends Controller
             $pptxPath = storage_path("app/tmp/{$pptxName}");
             $writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
             $writer->save($pptxPath);
-
         } else {
 
             // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
