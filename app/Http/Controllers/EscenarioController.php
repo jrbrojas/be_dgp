@@ -210,7 +210,10 @@ class EscenarioController extends Controller
         if (null === $file) {
             return "";
         }
-        return Storage::disk($acceso)->putFile('escenarios', $file);
+
+        $originalName = $file->getClientOriginalName();
+
+        return Storage::disk($acceso)->putFileAs('escenarios', $file, $originalName);
     }
 
     public function deleteFile(string $path, string $acceso = 'local')
@@ -262,6 +265,158 @@ class EscenarioController extends Controller
         $layout->setDocumentLayout(DocumentLayout::LAYOUT_SCREEN_16X9, true);
         $ppt->setLayout($layout);
 
+        // se usa para produccion
+        $chromeUserDir  = storage_path('app/chrome-user');
+        $chromeDataDir  = storage_path('app/chrome-data');
+        $chromeCacheDir = storage_path('app/chrome-cache');
+
+        // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
+        putenv('HOME=' . storage_path('app'));
+        putenv('XDG_CONFIG_HOME=' . storage_path('app'));
+        putenv('XDG_CACHE_HOME=' . storage_path('app'));
+
+        if ($escenario->formulario_id == 3) {
+
+            $html = view($formulario[$escenario->formulario_id], compact('escenario', 'plantillas'))->render();
+
+            $pngName = 'card-' . Str::uuid() . '.png';
+            $pngPath = storage_path("app/tmp/{$pngName}");
+            @mkdir(dirname($pngPath), 0775, true);
+
+            // se usa en produccion
+            Browsershot::html($html)
+                ->setChromePath('/usr/bin/chromium')
+                ->setNodeBinary('/usr/bin/node')
+                ->setNpmBinary('/usr/bin/npm')
+                ->windowSize(1280, 720)
+                ->addChromiumArguments([
+                    '--no-sandbox',
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                ])
+                ->deviceScaleFactor(2)
+                ->timeout(30)
+                ->save($pngPath);
+
+            // para usar localmente (dev)
+            // Browsershot::html($html)
+            //     ->select('#capture')
+            //     ->windowSize(1280, 720)
+            //     ->deviceScaleFactor(2)
+            //     ->timeout(30)
+            //     ->save($pngPath);
+
+            // Crear una diapositiva (solo la primera usa getActiveSlide())
+            $slide = $ppt->getActiveSlide();
+            $shape = $slide->createDrawingShape();
+            $shape->setName('Card');
+            $shape->setDescription('Card exportado');
+            $shape->setPath($pngPath);
+            $shape->setResizeProportional(true);
+
+            $slideW = 960;
+            $slideH = 540;
+            $shape->setHeight(520);
+            $imgW = $shape->getWidth();
+            $imgH = $shape->getHeight();
+            $shape->setOffsetX(($slideW - $imgW) / 2);
+            $shape->setOffsetY(($slideH - $imgH) / 2);
+
+            // 5) Guardar PPTX
+            $pptxName = 'escenario_riesgo_' . $escenario->id . '_' . date('Ymd_His') . '.pptx';
+            $pptxPath = storage_path("app/tmp/{$pptxName}");
+            $writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
+            $writer->save($pptxPath);
+
+        } else {
+
+            // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
+            foreach ($plantillas as $tipo => $data) {
+
+                $html = view($formulario[$escenario->formulario_id], compact('escenario', 'data', 'tipo'))->render();
+
+                $pngName = 'card-' . Str::uuid() . '.png';
+                $pngPath = storage_path("app/tmp/{$pngName}");
+                @mkdir(dirname($pngPath), 0775, true);
+
+                // se usa en produccion
+                Browsershot::html($html)
+                    ->setChromePath('/usr/bin/chromium')
+                    ->setNodeBinary('/usr/bin/node')
+                    ->setNpmBinary('/usr/bin/npm')
+                    ->addChromiumArguments([
+                        '--no-sandbox',
+                        '--disable-gpu',
+                        '--disable-dev-shm-usage',
+                    ])
+                    ->windowSize(1280, 720)
+                    ->deviceScaleFactor(2)
+                    ->timeout(30)
+                    ->save($pngPath);
+
+
+                // para usar localmente (dev)
+                // Browsershot::html($html)
+                //     ->select('#capture')
+                //     ->windowSize(1280, 720)
+                //     ->deviceScaleFactor(2)
+                //     ->timeout(30)
+                //     ->save($pngPath);
+
+                // Crear una diapositiva (solo la primera usa getActiveSlide())
+                $slide = ($tipo === 'inundaciones')
+                    ? $ppt->getActiveSlide()
+                    : $ppt->createSlide();
+
+                $shape = $slide->createDrawingShape();
+                $shape->setName('Card');
+                $shape->setDescription('Card exportado');
+                $shape->setPath($pngPath);
+                $shape->setResizeProportional(true);
+
+                $slideW = 960;
+                $slideH = 540;
+                $shape->setHeight(520);
+                $imgW = $shape->getWidth();
+                $imgH = $shape->getHeight();
+                $shape->setOffsetX(($slideW - $imgW) / 2);
+                $shape->setOffsetY(($slideH - $imgH) / 2);
+            }
+
+            // 5) Guardar PPTX
+            $pptxName = 'escenario_riesgo_' . $escenario->id . '_' . date('Ymd_His') . '.pptx';
+            $pptxPath = storage_path("app/tmp/{$pptxName}");
+            $writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
+            $writer->save($pptxPath);
+        }
+
+
+        return response()->download($pptxPath, $pptxName)->deleteFileAfterSend(true);
+    }
+
+    public function download2(Request $request, Escenario $escenario)
+    {
+        $formulario = [
+            '1' => 'ppt.lluviasAvisoMeteorologico',
+            '2' => 'ppt.lluviasAvisoTrimestral',
+            '3' => 'ppt.lluviasInformacionClimatica',
+            '4' => 'ppt.bajasTempAvisoMeteorologico',
+            '5' => 'ppt.bajasTempAvisoTrimestral',
+            '6' => 'ppt.bajasTempInformacionClimatica',
+            '7' => 'ppt.incForestalesNacionales',
+            '8' => 'ppt.incForestalesRegionales',
+            '9' => 'ppt.sismosTsunamiNacional',
+        ];
+
+        $escenario->load('formulario');
+        $plantillas = $request->plantillasAList ?? $request->data;
+
+        // 1) Crear presentación
+        $ppt = new PhpPresentation();
+        $layout = new DocumentLayout();
+        $layout->setDocumentLayout(DocumentLayout::LAYOUT_SCREEN_16X9, true);
+        $ppt->setLayout($layout);
+
         if ($escenario->formulario_id == 3) {
             $chromeUserDir  = storage_path('app/chrome-user');
             $chromeDataDir  = storage_path('app/chrome-data');
@@ -290,7 +445,6 @@ class EscenarioController extends Controller
                 ])
                 ->deviceScaleFactor(3)
                 ->timeout(120)
-                ->waitUntilNetworkIdle()
                 ->save($pngPath);
 
             // se usa en produccion
@@ -314,7 +468,6 @@ class EscenarioController extends Controller
             //     ])
             //     ->deviceScaleFactor(3)
             //     ->select('#capture')
-            //     ->waitUntilNetworkIdle()
             //     ->timeout(120)
             //     ->save($pngPath);
 
@@ -323,7 +476,6 @@ class EscenarioController extends Controller
             //     ->select('#capture')
             //     ->windowSize(1280, 720)
             //     ->deviceScaleFactor(3)
-            //     ->waitUntilNetworkIdle()
             //     ->timeout(60)
             //     ->save($pngPath);
 
@@ -352,7 +504,6 @@ class EscenarioController extends Controller
 
             // Limpieza del PNG al finalizar la descarga
             return response()->download($pptxPath, $pptxName)->deleteFileAfterSend(true);
-
         } else {
 
             // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
@@ -385,7 +536,6 @@ class EscenarioController extends Controller
                     ->windowSize(1280, 720)
                     ->deviceScaleFactor(3)
                     ->timeout(120)
-                    ->waitUntilNetworkIdle()
                     ->save($pngPath);
 
                 // se usa en produccion
@@ -409,7 +559,6 @@ class EscenarioController extends Controller
                 //     ])
                 //     ->deviceScaleFactor(3)
                 //     ->select('#capture')
-                //     ->waitUntilNetworkIdle()
                 //     ->timeout(120)
                 //     ->save($pngPath);
 
@@ -418,7 +567,6 @@ class EscenarioController extends Controller
                 //     ->select('#capture')
                 //     ->windowSize(1280, 720)
                 //     ->deviceScaleFactor(3)
-                //     ->waitUntilNetworkIdle()
                 //     ->timeout(60)
                 //     ->save($pngPath);
 

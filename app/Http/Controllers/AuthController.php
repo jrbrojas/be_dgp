@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request)
     {
         $token = $request->authenticate();
         return $this->respondWithToken($token);
