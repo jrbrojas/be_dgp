@@ -20,7 +20,7 @@ class Image extends Component
      * Create a new component instance.
      */
     public function __construct(
-        string $src,
+        ?string $src = null,
         string $alt = '',
         ?string $caption = null,
         string $fit = 'cover',

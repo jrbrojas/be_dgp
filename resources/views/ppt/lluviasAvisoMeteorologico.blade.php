@@ -24,11 +24,6 @@
 
 <body>
     @php
-        $indexMapa = [
-            'inundaciones' => 0,
-            'movimiento_masa' => 1,
-        ];
-
         $nivelColorClasses = [
             'MUY ALTO' => 'text-red-500 bg-red-500',
             'ALTO' => 'text-orange-400 bg-orange-400',
@@ -67,8 +62,7 @@
                         </div>
 
                         <div class='flex-1 flex justify-end'>
-                            <div
-                                class='bg-green-600 bg-opacity-70 rounded-lg font-semibold text-white px-4 py-2'>
+                            <div class='bg-green-600 bg-opacity-70 rounded-lg font-semibold text-white px-4 py-2'>
                                 <span>{{ $escenario->nombre }}</span>
                             </div>
                         </div>
@@ -127,19 +121,23 @@
                                         <p>{{ $tipo == 'inundaciones' ? 'Centros Poblados' : 'Distritos' }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}
+                                        </p>
                                         <p>Población</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}
+                                        </p>
                                         <p>Viviendas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_inst_educativa']) }}</p>
+                                        <p class="text-xl font-bold">
+                                            {{ numero_formateado($item['total_inst_educativa']) }}</p>
                                         <p>Inst. Educativas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}
+                                        </p>
                                         <p>Est. Salud</p>
                                     </div>
                                 </div>
@@ -199,19 +197,23 @@
                                         <p>{{ $tipo == 'inundaciones' ? 'Centros Poblados' : 'Distritos' }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_poblacion']) }}
+                                        </p>
                                         <p>Población</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_vivienda']) }}
+                                        </p>
                                         <p>Viviendas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_inst_educativa']) }}</p>
+                                        <p class="text-xl font-bold">
+                                            {{ numero_formateado($item['total_inst_educativa']) }}</p>
                                         <p>Inst. Educativas</p>
                                     </div>
                                     <div>
-                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}</p>
+                                        <p class="text-xl font-bold">{{ numero_formateado($item['total_est_salud']) }}
+                                        </p>
                                         <p>Est. Salud</p>
                                     </div>
                                 </div>
@@ -260,11 +262,8 @@
             </div>
 
             <div class='flex items-center  justify-center'>
-                @if ($escenario->mapas)
-                    <x-image
-                        src="{{ $escenario->mapas[$indexMapa[$tipo]] ? $escenario->mapas[$indexMapa[$tipo]]->ruta : null }}"
-                        alt="Mapa principal" ratio="16/9" />
-                @endif
+                <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'inundaciones' ?
+                    'imagen_derecho_inu' : 'imagen_derecho_mm')->ruta ?? ''" />
             </div>
 
         </div>

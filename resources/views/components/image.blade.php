@@ -11,6 +11,8 @@
     $imgClasses = "w-full h-auto object-{$fit} rounded-xl";
 
     $style = $ratio ? "aspect-ratio: {$ratio};" : '';
+
+    \Log::info($src);
 @endphp
 
 <figure {{ $attributes->merge(['class' => $class]) }}>

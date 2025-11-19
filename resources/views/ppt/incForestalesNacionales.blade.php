@@ -37,10 +37,6 @@
         $mesInicio = \Carbon\Carbon::parse($escenario->fecha_inicio)->translatedFormat('F');
         $mesFin = \Carbon\Carbon::parse($escenario->fecha_fin)->translatedFormat('F');
         $year = \Carbon\Carbon::parse($escenario->fecha_inicio)->year;
-
-        $mapaIzquierdo = $escenario->mapas->where('tipo', 'mapa_izquierdo')->values();
-        $mapaCentro = $escenario->mapas->where('tipo', 'mapa_centro')->values();
-
     @endphp
 
     <div id="capture" class="page p-2">
@@ -48,9 +44,7 @@
 
             <div class="w-full flex justify-start">
                 <div class="flex flex-col gap-4 w-full">
-                    @if ($escenario->mapas)
-                        <x-image src="{{ $mapaIzquierdo[0] ? $mapaIzquierdo[0]->ruta : null }}" />
-                    @endif
+                    <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'imagen_izquierdo_inc')->ruta ?? ''" />
 
                     @foreach (array_slice($data, 0, 1) as $index => $item)
                         <div class="text-sm text-teal-600 font-semibold p-4 bg-blue-100/80">
@@ -73,9 +67,7 @@
                         <h4 class="text-center font-semibold text-green-600/60">{{ $escenario->subtitulo }}</h4>
                     </div>
 
-                    @if ($escenario->mapas)
-                        <x-image src="{{ $mapaCentro[0] ? $mapaCentro[0]->ruta : null }}" />
-                    @endif
+                    <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'imagen_centro_inc')->ruta ?? ''" />
                 </div>
             </div>
 

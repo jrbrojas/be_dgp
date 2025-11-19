@@ -47,10 +47,6 @@
         $mesFin = \Carbon\Carbon::parse($escenario->fecha_fin)->translatedFormat('F');
         $year = \Carbon\Carbon::parse($escenario->fecha_inicio)->year;
 
-        $mapaIzquierdoSuperior = $escenario->mapas->where('tipo', 'mapa_izquierdo_superior')->values();
-        $mapaIzquierdoInferior = $escenario->mapas->where('tipo', 'mapa_izquierdo_inferior')->values();
-        $mapaCentro = $escenario->mapas->where('tipo', 'mapa_centro')->values();
-
     @endphp
 
     <div id="capture" class="page p-2">
@@ -71,21 +67,15 @@
 
             <div class='flex flex-col items-center justify-center gap-2'>
                 <div class='flex justify-center w-full'>
-                    @if ($escenario->mapas)
-                        <x-image src="{{ $mapaIzquierdoSuperior[0] ? $mapaIzquierdoSuperior[0]->ruta : null }}" />
-                    @endif
+                    <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'imagen_izquierdo_superior_bt')->ruta ?? ''" />
                 </div>
                 <div class='flex justify-center w-full'>
-                    @if ($escenario->mapas)
-                        <x-image src="{{ $mapaIzquierdoInferior[0] ? $mapaIzquierdoInferior[0]->ruta : null }}" />
-                    @endif
+                    <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'imagen_izquierdo_inferior_bt')->ruta ?? ''" />
                 </div>
             </div>
 
             <div class='col-span-2 flex items-center justify-center'>
-                @if ($escenario->mapas)
-                    <x-image src="{{ $mapaCentro[0] ? $mapaCentro[0]->ruta : null }}" />
-                @endif
+                <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'imagen_centro_bt')->ruta ?? ''" />
             </div>
 
             <div class='col-span-2'>

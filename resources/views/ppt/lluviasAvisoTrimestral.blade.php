@@ -24,10 +24,6 @@
 
 <body>
     @php
-        $indexMapa = [
-            'inundaciones' => 0,
-            'movimiento_masa' => 1,
-        ];
 
         $nivelColorClasses = [
             'MUY ALTO' => 'text-red-500 bg-red-500',
@@ -67,24 +63,18 @@
 
             <div class='flex flex-col justify-start items-center gap-2'>
                 <div class='w-full flex justify-center'>
-                    @if ($escenario->mapas)
-                        <x-image
-                            src="{{ $mapaIzquierdoSuperior[$indexMapa[$tipo]] ? $mapaIzquierdoSuperior[$indexMapa[$tipo]]->ruta : null }}" />
-                    @endif
-
+                    <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'inundaciones' ?
+                        'imagen_izquierdo_superior_inu' : 'imagen_izquierdo_superior_mm')->ruta ?? ''" />
                 </div>
                 <div class='w-full flex justify-center'>
-                    @if ($escenario->mapas)
-                        <x-image
-                            src="{{ $mapaIzquierdoInferior[$indexMapa[$tipo]] ? $mapaIzquierdoInferior[$indexMapa[$tipo]]->ruta : null }}" />
-                    @endif
+                    <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'inundaciones' ?
+                        'imagen_izquierdo_inferior_inu' : 'imagen_izquierdo_inferior_mm')->ruta ?? ''" />
                 </div>
             </div>
 
             <div class='col-span-2 flex items-start justify-center'>
-                @if ($escenario->mapas)
-                    <x-image src="{{ $mapaCentro[$indexMapa[$tipo]] ? $mapaCentro[$indexMapa[$tipo]]->ruta : null }}" />
-                @endif
+                <x-image :src="$escenario->mapas->firstWhere('tipo', $tipo === 'inundaciones' ?
+                    'imagen_centro_inu' : 'imagen_centro_mm')->ruta ?? ''" />
             </div>
 
             <div class='col-span-2'>

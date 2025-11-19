@@ -58,7 +58,7 @@
                 <div class='grid grid-cols-2 items-stretch border rounded-xl border-teal-600'>
                     <div class='w-full h-full p-3 flex justify-center items-center aspect-[3/4]'>
                         @if ($escenario->mapas)
-                            <x-image src="{{ $escenario->mapas[0] ? $escenario->mapas[0]->ruta : null }}"
+                            <x-image src="{{ $escenario->mapas[0] ? $escenario->mapas[0]->ruta : '' }}"
                                 alt="Mapa principal" ratio="16/9" />
                         @endif
                     </div>
@@ -156,7 +156,7 @@
                 <div class='grid grid-cols-2 items-stretch border rounded-xl border-teal-600'>
                     <div class='w-full h-full p-4 flex justify-center items-center aspect-[3/4]'>
                         @if ($escenario->mapas)
-                            <x-image src="{{ $escenario->mapas[1] ? $escenario->mapas[1]->ruta : null }}"
+                            <x-image src="{{ $escenario->mapas[1] ? $escenario->mapas[1]->ruta : '' }}"
                                 alt="Mapa principal" ratio="16/9" />
                         @endif
                     </div>

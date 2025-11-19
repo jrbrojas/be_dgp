@@ -228,10 +228,7 @@
             </div>
 
             <div class='flex items-center  justify-center w-full'>
-                @if ($escenario->mapas)
-                    <x-image src="{{ $escenario->mapas[0] ? $escenario->mapas[0]->ruta : null }}" alt="Mapa principal"
-                        ratio="16/9" />
-                @endif
+                <x-image src="{{ $escenario->mapas[0] ? $escenario->mapas[0]->ruta : '' }}" alt="Mapa principal" ratio="16/9" />
             </div>
 
         </div>

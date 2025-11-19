@@ -25,11 +25,18 @@
 <body>
 
     @php
-        $indexMapa = [
-            'sismos' => 0,
-            'tsunamis' => 1,
-            'glaciares' => 2,
-            'movimiento_masa' => 3,
+        $mapaIzquierdo = [
+            'sismos' => 'imagen_izquierdo_sismo',
+            'tsunamis' => 'imagen_izquierdo_tsunami',
+            'glaciares' => 'imagen_izquierdo_glaciar',
+            'movimiento_masa' => 'imagen_izquierdo_mm',
+        ];
+
+        $mapaCentro = [
+            'sismos' => 'imagen_centro_sismo',
+            'tsunamis' => 'imagen_centro_tsunami',
+            'glaciares' => 'imagen_centro_glaciar',
+            'movimiento_masa' => 'imagen_centro_mm',
         ];
 
         $nivelColorClasses = [
@@ -45,9 +52,6 @@
         $mesInicio = \Carbon\Carbon::parse($escenario->fecha_inicio)->translatedFormat('F');
         $mesFin = \Carbon\Carbon::parse($escenario->fecha_fin)->translatedFormat('F');
         $year = \Carbon\Carbon::parse($escenario->fecha_inicio)->year;
-
-        $mapaIzquierdo = $escenario->mapas->where('tipo', 'mapa_izquierdo')->values();
-        $mapaCentro = $escenario->mapas->where('tipo', 'mapa_centro')->values();
     @endphp
 
     <div id="capture" class="p-2">
@@ -62,9 +66,7 @@
                     </div>
                 </div>
 
-                @if ($escenario->mapas)
-                    <x-image src="{{ $mapaIzquierdo[$indexMapa[$tipo]] ? $mapaIzquierdo[$indexMapa[$tipo]]->ruta : null }}" />
-                @endif
+                <x-image :src="$escenario->mapas->firstWhere('tipo', $mapaIzquierdo[$tipo])->ruta ?? ''" />
 
                 <div class='w-full flex items-center gap-2'>
                     <span class="text-xs flex-shrink-0">Fuente: CENEPRED (2025)</span>
@@ -97,9 +99,7 @@
                 </div>
 
                 <div class='w-full flex justify-center items-center'>
-                    @if ($escenario->mapas)
-                        <x-image src="{{ $mapaCentro[$indexMapa[$tipo]] ? $mapaCentro[$indexMapa[$tipo]]->ruta : null }}" />
-                    @endif
+                    <x-image :src="$escenario->mapas->firstWhere('tipo', $mapaCentro[$tipo])->ruta ?? ''" />
                 </div>
 
                 @foreach (array_slice($data, 0, 1) as $index => $item)
