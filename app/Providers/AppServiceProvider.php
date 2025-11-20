@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Scramble::configure()
             ->withDocumentTransformers(function (OpenApi $openApi) {
-                $openApi->info->title = 'API de Modulo Simse';
+                $openApi->info->title = 'API de Modulo DGP';
                 $openApi->info->version = 'v1';
                 $openApi->info->description = '';
                 $openApi->secure(
