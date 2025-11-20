@@ -1,0 +1,1495 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Documento de API Integraci\u00f3n\n                APIs de Integraci\u00f3n Sistema de Registro DGP\n                Plataforma Integradora CENEPRED",
+        "version": "v1.0.0",
+        "description": "API para autenticaci\u00f3n JWT y registro de escenarios con archivos y mapas."
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000"
+        }
+    ],
+    "security": [
+        {
+            "http": []
+        }
+    ],
+    "paths": {
+        "/v1/login": {
+            "post": {
+                "operationId": "auth.login",
+                "summary": "Login de usuario",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "bearer"
+                                            ]
+                                        },
+                                        "expires_in": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "success"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "access_token",
+                                        "token_type",
+                                        "expires_in",
+                                        "user",
+                                        "status"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/logout": {
+            "post": {
+                "operationId": "auth.logout",
+                "summary": "Cerrar sesio\u0301n",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Sesi\u00f3n cerrada correctamente"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/refresh": {
+            "post": {
+                "operationId": "auth.refresh",
+                "summary": "Refrescar token",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "bearer"
+                                            ]
+                                        },
+                                        "expires_in": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "success"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "access_token",
+                                        "token_type",
+                                        "expires_in",
+                                        "user",
+                                        "status"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/me": {
+            "get": {
+                "operationId": "auth.me",
+                "summary": "Usuario autenticado (perfil)",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/escenarios/show/{formulario}/pi": {
+            "get": {
+                "operationId": "escenario.showPI",
+                "summary": "Mostrar informacion de un escenario para la plataforma integrada",
+                "tags": [
+                    "Escenario"
+                ],
+                "parameters": [
+                    {
+                        "name": "formulario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The formulario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "escenario": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "plantillas": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "minItems": 0,
+                                                    "maxItems": 0,
+                                                    "additionalItems": false
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "sismos": {
+                                                            "type": "string"
+                                                        },
+                                                        "tsunamis": {
+                                                            "type": "string"
+                                                        },
+                                                        "glaciares": {
+                                                            "type": "string"
+                                                        },
+                                                        "movimiento_masa": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "sismos",
+                                                        "tsunamis",
+                                                        "glaciares",
+                                                        "movimiento_masa"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "inundaciones": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "inundaciones"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "inundaciones": {
+                                                            "type": "string"
+                                                        },
+                                                        "movimiento_masa": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "inundaciones",
+                                                        "movimiento_masa"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "instrumentos": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "escenario",
+                                        "plantillas",
+                                        "instrumentos"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/v1/escenarios/{escenario}/download": {
+            "post": {
+                "operationId": "escenario.download",
+                "summary": "Descargar PPT del Escenario",
+                "tags": [
+                    "Escenario"
+                ],
+                "parameters": [
+                    {
+                        "name": "escenario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The escenario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Content-Disposition": {
+                                "required": true,
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "attachment"
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/api-doc/pdf": {
+            "get": {
+                "operationId": "escenario.apiDocPdf",
+                "tags": [
+                    "Escenario"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/escenarios-api": {
+            "post": {
+                "operationId": "escenario.storeApi",
+                "summary": "Guardar un nuevo escenario mediante una api publica",
+                "tags": [
+                    "Escenario"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/EscenarioStoreRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "token": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Escenario creado correctamente!"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/escenarios": {
+            "get": {
+                "operationId": "escenarios.index",
+                "summary": "Listar los escenarios",
+                "tags": [
+                    "Escenario"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "list": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Escenario"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "list",
+                                        "total"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "escenarios.store",
+                "summary": "Guardar un nuevo escenario",
+                "tags": [
+                    "Escenario"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EscenarioStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Escenario creado correctamente!"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/escenarios/{escenario}": {
+            "get": {
+                "operationId": "escenarios.show",
+                "summary": "Mostrar informacion de un escenario",
+                "tags": [
+                    "Escenario"
+                ],
+                "parameters": [
+                    {
+                        "name": "escenario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The escenario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "escenario": {
+                                            "$ref": "#/components/schemas/Escenario"
+                                        },
+                                        "plantillas": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "minItems": 0,
+                                                    "maxItems": 0,
+                                                    "additionalItems": false
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "sismos": {
+                                                            "type": "string"
+                                                        },
+                                                        "tsunamis": {
+                                                            "type": "string"
+                                                        },
+                                                        "glaciares": {
+                                                            "type": "string"
+                                                        },
+                                                        "movimiento_masa": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "sismos",
+                                                        "tsunamis",
+                                                        "glaciares",
+                                                        "movimiento_masa"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "inundaciones": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "inundaciones"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "inundaciones": {
+                                                            "type": "string"
+                                                        },
+                                                        "movimiento_masa": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "inundaciones",
+                                                        "movimiento_masa"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "instrumentos": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "escenario",
+                                        "plantillas",
+                                        "instrumentos"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "escenarios.update",
+                "summary": "Actualizar un escenario",
+                "tags": [
+                    "Escenario"
+                ],
+                "parameters": [
+                    {
+                        "name": "escenario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The escenario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EscenarioStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Escenario actualizado correctamente!"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "escenarios.destroy",
+                "summary": "Eliminar un escenario",
+                "tags": [
+                    "Escenario"
+                ],
+                "parameters": [
+                    {
+                        "name": "escenario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The escenario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Escenario eliminado exitosamente!"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/formularios": {
+            "get": {
+                "operationId": "formularios.index",
+                "summary": "Obtener la lista de formularios",
+                "tags": [
+                    "Formulario"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "list": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Formulario"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "list"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/formularios/{formulario}": {
+            "get": {
+                "operationId": "formularios.show",
+                "summary": "Mostrar la informacio\u0301n de un formulario",
+                "tags": [
+                    "Formulario"
+                ],
+                "parameters": [
+                    {
+                        "name": "formulario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The formulario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`Formulario`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Formulario"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/roles": {
+            "get": {
+                "operationId": "roles.index",
+                "summary": "Obtener todos los roles",
+                "tags": [
+                    "Rol"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "list": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Role"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "list"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/usuarios": {
+            "get": {
+                "operationId": "usuarios.index",
+                "summary": "Listado de todos los usuarios",
+                "tags": [
+                    "Usuario"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "enviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "list": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "list",
+                                        "total"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "usuarios.store",
+                "summary": "Guardar un nuevo usuario",
+                "tags": [
+                    "Usuario"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "role_id": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 5
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "role_id",
+                                    "name",
+                                    "email"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Usuario credo exitoasamente!"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/usuarios/{usuario}": {
+            "get": {
+                "operationId": "usuarios.show",
+                "summary": "Mostrar informacion de un usuario",
+                "tags": [
+                    "Usuario"
+                ],
+                "parameters": [
+                    {
+                        "name": "usuario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The usuario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`User`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "usuarios.update",
+                "summary": "Actualizar informacion de un usuario",
+                "tags": [
+                    "Usuario"
+                ],
+                "parameters": [
+                    {
+                        "name": "usuario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The usuario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "role_id": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255
+                                    },
+                                    "password": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "minLength": 5
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "role_id",
+                                    "name",
+                                    "email"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Usuario actualizado exitosamente!"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "usuarios.destroy",
+                "summary": "Eliminar un usuario",
+                "tags": [
+                    "Usuario"
+                ],
+                "parameters": [
+                    {
+                        "name": "usuario",
+                        "in": "path",
+                        "required": true,
+                        "description": "The usuario ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Usuario eliminado exitosamente"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "http": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+            "Escenario": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "formulario_id": {
+                        "type": "integer"
+                    },
+                    "fecha_inicio": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "fecha_fin": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "nombre": {
+                        "type": "string"
+                    },
+                    "subtitulo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "titulo_base": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "aviso": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "url_base": {
+                        "type": "string"
+                    },
+                    "plantilla_subida": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "excel_adjunto": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "formulario_id",
+                    "fecha_inicio",
+                    "fecha_fin",
+                    "nombre",
+                    "subtitulo",
+                    "titulo_base",
+                    "aviso",
+                    "url_base",
+                    "plantilla_subida",
+                    "excel_adjunto",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "Escenario"
+            },
+            "EscenarioStoreRequest": {
+                "type": "object",
+                "properties": {
+                    "formulario_id": {
+                        "type": "integer"
+                    },
+                    "fecha_inicio": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "fecha_fin": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "subtitulo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "titulo_base": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "aviso": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "url_base": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "formulario_id",
+                    "fecha_inicio",
+                    "fecha_fin",
+                    "nombre",
+                    "url_base"
+                ],
+                "title": "EscenarioStoreRequest"
+            },
+            "Formulario": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "nombre": {
+                        "type": "string"
+                    },
+                    "peligro": {
+                        "type": "string"
+                    },
+                    "plantilla": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "nombre",
+                    "peligro",
+                    "plantilla",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "Formulario"
+            },
+            "LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "title": "LoginRequest"
+            },
+            "Role": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "Role"
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "role_id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "email_verified_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "avatar": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "role_id",
+                    "name",
+                    "email",
+                    "email_verified_at",
+                    "avatar",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "User"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ModelNotFoundException": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "AuthenticationException": {
+                "description": "Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

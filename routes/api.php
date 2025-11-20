@@ -1,16 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DepartamentoController;
-use App\Http\Controllers\DistritoController;
 use App\Http\Controllers\EscenarioController;
 use App\Http\Controllers\FormularioController;
-use App\Http\Controllers\PlantillaAController;
-use App\Http\Controllers\PlantillaBController;
-use App\Http\Controllers\ProvinciaController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UsuarioController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/v1/login', [AuthController::class, 'login']);
@@ -21,19 +15,11 @@ Route::post('v1/escenarios/{escenario}/download', [EscenarioController::class, '
 Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
 
     // escenarios
+    Route::post('/escenarios-api', [EscenarioController::class, 'storeApi']);
     Route::apiResource('/escenarios', EscenarioController::class);
 
     // formularios
     Route::apiResource('/formularios', FormularioController::class)->only('index', 'show');
-
-    // departamentos
-    //Route::apiResource('/departamentos', DepartamentoController::class)->only('index');
-
-    // provincias
-    Route::apiResource('/provincias', ProvinciaController::class)->only('index');
-
-    // distritos
-    Route::apiResource('/distritos', DistritoController::class)->only('index');
 
     //usuarios
     Route::apiResource('/usuarios', UsuarioController::class);

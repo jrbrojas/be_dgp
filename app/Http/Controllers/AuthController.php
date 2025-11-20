@@ -14,6 +14,8 @@ class AuthController extends Controller
     /**
      * Login de usuario
      *
+     * Autentica credenciales válidas y devuelve un token JWT para acceder a los endpoints protegidos de la API.
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function login(LoginRequest $request)
@@ -24,6 +26,8 @@ class AuthController extends Controller
 
     /**
      * Usuario autenticado (perfil)
+     *
+     * Devuelve la información del usuario autenticado junto con su rol y datos básicos.
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -36,6 +40,8 @@ class AuthController extends Controller
     /**
      * Cerrar sesión
      *
+     * Cierra la sesión del usuario autenticado e invalida el token JWT activo.
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function logout()
@@ -46,6 +52,8 @@ class AuthController extends Controller
 
     /**
      * Refrescar token
+     *
+     * Genera un nuevo token JWT reemplazando al anterior sin necesidad de volver a iniciar sesión.
      *
      * @return \Illuminate\Http\JsonResponse
      */

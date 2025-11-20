@@ -10,6 +10,10 @@ class UsuarioController extends Controller
 {
     /**
      * Listado de todos los usuarios
+     *
+     * Lista los usuarios registrados en el sistema junto con su rol.
+     *
+     *@return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
@@ -23,6 +27,10 @@ class UsuarioController extends Controller
 
     /**
      * Guardar un nuevo usuario
+     *
+     * Registra un nuevo usuario en el sistema con su respectivo rol y credenciales seguras.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -44,6 +52,10 @@ class UsuarioController extends Controller
 
     /**
      * Mostrar informacion de un usuario
+     *
+     * Muestra los detalles de un usuario específico identificado por su ID.
+     *
+     *  @return App\Models\User;
      */
     public function show(User $usuario)
     {
@@ -52,6 +64,10 @@ class UsuarioController extends Controller
 
     /**
      * Actualizar informacion de un usuario
+     *
+     * Actualiza la información de un usuario existente, incluyendo nombre, correo u otros atributos permitidos.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, User $usuario)
     {
@@ -73,6 +89,10 @@ class UsuarioController extends Controller
 
     /**
      * Eliminar un usuario
+     *
+     * Elimina un usuario del sistema junto con sus relaciones asociadas, si las hubiera.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(User $usuario)
     {

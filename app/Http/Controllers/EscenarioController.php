@@ -14,7 +14,9 @@ use App\View\Components\FormatNombreArray;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -27,6 +29,10 @@ class EscenarioController extends Controller
 {
     /**
      * Listar los escenarios
+     *
+     * Lista los escenarios registrados, permitiendo filtrar y consultar su información principal.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
@@ -43,6 +49,10 @@ class EscenarioController extends Controller
 
     /**
      * Mostrar informacion de un escenario
+     *
+     * Devuelve el detalle completo de un escenario específico para mostrarlo en una plantilla.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show(Escenario $escenario)
     {
@@ -58,11 +68,15 @@ class EscenarioController extends Controller
     }
 
     /**
-     * Mostrar informacion de un escenario para la plataforma integrada
+     * Mostrar informacion de un escenario para la Plataforma Integrada
+     *
+     * Devuelve el detalle completo de un formulario específico para mostrarlo en el modelo estático.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function showPI(Request $request)
+    public function showPI(Request $request, Formulario $formulario)
     {
-        $escenario = Escenario::where('formulario_id', $request->formulario)->orderBy('id', 'desc')->first();
+        $escenario = Escenario::where('formulario_id', $formulario->id)->orderBy('id', 'desc')->first();
         $escenario->excel_adjunto = asset('storage/' . $escenario->excel_adjunto);
         $data = $escenario ? Escenario::getByFormulario($escenario) : [];
         $instrumentos = VistaInstrumentos::instrumentosPorNivel($data);
@@ -76,6 +90,10 @@ class EscenarioController extends Controller
 
     /**
      * Guardar un nuevo escenario
+     *
+     * Registra un nuevo escenario, validando credenciales y token, y adjuntando la plantilla, el Excel y las imágenes de mapas.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(EscenarioStoreRequest $request)
     {
@@ -137,7 +155,105 @@ class EscenarioController extends Controller
     }
 
     /**
+     * Guardar un nuevo escenario mediante una api publica
+     *
+     * Permite que un sistema externo (como Python) cargue un escenario completo enviando archivos individuales por tipo de mapa y datos estructurados del formulario.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function storeApi(EscenarioStoreRequest $request)
+    {
+        $userAunteticated = Auth::guard('api')->user();
+        // validamos si esta autenticado
+        if (! $userAunteticated) {
+            return response()->json([
+                'message' => 'Token inválido o no enviado.',
+            ], 401);
+        }
+
+        // validamos si el correo y contraseña sea correctos
+        if (
+            $request->email !== $userAunteticated->email ||
+            ! Hash::check($request->password, $userAunteticated->password)
+        ) {
+            return response()->json([
+                'message' => 'Usuario o contraseña no válidos para el token proporcionado.',
+            ], 401);
+        }
+
+        // validamos el token enviado en el body con el token de autorizacion
+        $headerToken = $request->bearerToken();
+        $bodyToken   = $request->input('token');
+
+        if ($bodyToken !== null && $bodyToken !== $headerToken) {
+            return response()->json([
+                'message' => 'El token proporcionado no coincide con el token de autorización.',
+            ], 401);
+        }
+
+        $camposFile = [
+            'imagen_derecho_inu',
+            'imagen_derecho_mm',
+            'imagen_derecho_bt',
+            'imagen_centro_inu',
+            'imagen_centro_mm',
+            'imagen_centro_bt',
+            'imagen_centro_inc',
+            'imagen_centro_sismo',
+            'imagen_centro_tsunami',
+            'imagen_centro_glaciar',
+            'imagen_izquierdo_inu',
+            'imagen_izquierdo_mm',
+            'imagen_izquierdo_bt',
+            'imagen_izquierdo_inc',
+            'imagen_izquierdo_sismo',
+            'imagen_izquierdo_tsunami',
+            'imagen_izquierdo_glaciar',
+            'imagen_izquierdo_superior_inu',
+            'imagen_izquierdo_superior_mm',
+            'imagen_izquierdo_superior_bt',
+            'imagen_izquierdo_inferior_inu',
+            'imagen_izquierdo_inferior_mm',
+            'imagen_izquierdo_inferior_bt',
+        ];
+
+        $data = $request->validated();
+        $escenario = DB::transaction(function () use ($request, $data, $camposFile) {
+            $data['plantilla_subida'] = $this->storeFile($request->file('plantilla'));
+            $data['excel_adjunto'] = $this->storeFile($request->file('excel_adjunto'), 'public');
+            $escenarioData = Escenario::create($data);
+
+            foreach ($camposFile as $tipo) {
+                if ($request->hasFile($tipo)) {
+                    $ruta = $this->storeFile($request->file($tipo), 'public');
+                    Mapa::create([
+                        'escenario_id' => $escenarioData->id, // << Agrega un campo "tipo" para identificar el mapa
+                        'tipo' => $tipo, // << Agrega un campo "tipo" para identificar el mapa
+                        'ruta' => $ruta,  // Asegúrate de tener un campo "ruta" en la tabla
+                    ]);
+                }
+            }
+
+            return $escenarioData;
+        });
+
+        // procesar la plantilla
+        if ($request->file('plantilla')) {
+            $storedRelPath = $escenario->plantilla_subida; // lo que retorna storeFile (p.ej. "imports/xxxx.csv|xlsx")
+            $escenario->formulario->plantilla === 'A' ?
+                CopyImporterPlantilla::importCsvToPlantillaA($storedRelPath, $escenario->id) :
+                CopyImporterPlantilla::importCsvToPlantillaB($storedRelPath, $escenario->id);
+        }
+
+        return response()->json(['message' => 'Escenario creado correctamente!']);
+    }
+
+    /**
      * Actualizar un escenario
+     *
+     *Actualiza los datos de un escenario existente, incluyendo sus archivos asociados.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(EscenarioStoreRequest $request, Escenario $escenario)
     {
@@ -230,7 +346,9 @@ class EscenarioController extends Controller
     /**
      * Eliminar un escenario
      *
-     * @response array{"message":"Escenario eliminado exitosamente!"}
+     * Elimina un escenario y limpia los archivos relacionados almacenados en el sistema.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Request $request, Escenario $escenario)
     {
@@ -289,27 +407,15 @@ class EscenarioController extends Controller
         }
     }
 
-    public function downloadPlantilla(Request $request, Escenario $escenario)
-    {
-        $data = $request->input('data', []);
-        return Excel::download(new PlantillaExport($data), "plantilla_$escenario->id.xlsx");
-    }
-
-    public function excel(Request $request, Escenario $escenario)
-    {
-        $path = $escenario->excel_adjunto;
-
-        if (!Storage::disk('public')->exists($path)) {
-            abort(404);
-        }
-
-        $fileName = 'escenario-riesgo-' . $escenario->id . '.xlsx';
-
-        return Storage::disk('public')->download($path, $fileName);
-    }
-
     /**
-     * Descargar excel
+     * Genera y descarga la presentación PowerPoint del escenario de riesgo.
+     *
+     * A partir de las plantillas asociadas al escenario, renderiza las cards en imágenes PNG mediante Browsershot, las inserta en una presentación
+     * PPTX y devuelve el archivo para su descarga. El archivo temporal se elimina automáticamente después de ser enviado.
+     *
+     * @param  \Illuminate\Http\Request                           $request
+     * @param  \App\Models\Escenario                              $escenario
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public function download(Request $request, Escenario $escenario)
     {
@@ -460,212 +566,5 @@ class EscenarioController extends Controller
 
 
         return response()->download($pptxPath, $pptxName)->deleteFileAfterSend(true);
-    }
-
-    public function download2(Request $request, Escenario $escenario)
-    {
-        $formulario = [
-            '1' => 'ppt.lluviasAvisoMeteorologico',
-            '2' => 'ppt.lluviasAvisoTrimestral',
-            '3' => 'ppt.lluviasInformacionClimatica',
-            '4' => 'ppt.bajasTempAvisoMeteorologico',
-            '5' => 'ppt.bajasTempAvisoTrimestral',
-            '6' => 'ppt.bajasTempInformacionClimatica',
-            '7' => 'ppt.incForestalesNacionales',
-            '8' => 'ppt.incForestalesRegionales',
-            '9' => 'ppt.sismosTsunamiNacional',
-        ];
-
-        $escenario->load('formulario');
-        $plantillas = $request->plantillasAList ?? $request->data;
-
-        // 1) Crear presentación
-        $ppt = new PhpPresentation();
-        $layout = new DocumentLayout();
-        $layout->setDocumentLayout(DocumentLayout::LAYOUT_SCREEN_16X9, true);
-        $ppt->setLayout($layout);
-
-        if ($escenario->formulario_id == 3) {
-            $chromeUserDir  = storage_path('app/chrome-user');
-            $chromeDataDir  = storage_path('app/chrome-data');
-            $chromeCacheDir = storage_path('app/chrome-cache');
-
-            // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
-            putenv('HOME=' . storage_path('app'));
-            putenv('XDG_CONFIG_HOME=' . storage_path('app'));
-            putenv('XDG_CACHE_HOME=' . storage_path('app'));
-
-            $html = view($formulario[$escenario->formulario_id], compact('escenario', 'plantillas'))->render();
-
-            $pngName = 'card-' . Str::uuid() . '.png';
-            $pngPath = storage_path("app/tmp/{$pngName}");
-            @mkdir(dirname($pngPath), 0775, true);
-
-            Browsershot::html($html)
-                ->setChromePath('/usr/bin/chromium')
-                ->setNodeBinary('/usr/bin/node')
-                ->setNpmBinary('/usr/bin/npm')
-                ->windowSize(1280, 720)
-                ->addChromiumArguments([
-                    '--no-sandbox',
-                    '--disable-gpu',
-                    '--disable-dev-shm-usage',
-                ])
-                ->deviceScaleFactor(3)
-                ->timeout(120)
-                ->save($pngPath);
-
-            // se usa en produccion
-            // Browsershot::html($html)
-            //     ->setChromePath('/usr/bin/chromium')
-            //     ->setNodeBinary('/usr/bin/node')
-            //     ->setNpmBinary('/usr/bin/npm')
-            //     ->windowSize(1280, 720)
-            //     ->addChromiumArguments([
-            //         '--no-sandbox',
-            //         '--disable-setuid-sandbox',
-            //         '--disable-gpu',
-            //         '--disable-dev-shm-usage',
-            //         '--disable-crash-reporter',
-            //         '--noerrdialogs',
-            //         '--disable-extensions',
-            //         '--disable-features=TranslateUI',
-            //         '--user-data-dir=' . $chromeUserDir,
-            //         '--data-path='     . $chromeDataDir,
-            //         '--disk-cache-dir='. $chromeCacheDir,
-            //     ])
-            //     ->deviceScaleFactor(3)
-            //     ->select('#capture')
-            //     ->timeout(120)
-            //     ->save($pngPath);
-
-            // para usar localmente (dev)
-            // Browsershot::html($html)
-            //     ->select('#capture')
-            //     ->windowSize(1280, 720)
-            //     ->deviceScaleFactor(3)
-            //     ->timeout(60)
-            //     ->save($pngPath);
-
-            // Crear una diapositiva (solo la primera usa getActiveSlide())
-            $slide = $ppt->getActiveSlide();
-            $shape = $slide->createDrawingShape();
-            $shape->setName('Card');
-            $shape->setDescription('Card exportado');
-            $shape->setPath($pngPath);
-            $shape->setResizeProportional(true);
-
-            $slideW = 960;
-            $slideH = 540;
-            $shape->setHeight(520);
-            $imgW = $shape->getWidth();
-            $imgH = $shape->getHeight();
-            $shape->setOffsetX(($slideW - $imgW) / 2);
-            $shape->setOffsetY(($slideH - $imgH) / 2);
-
-
-            // 5) Guardar PPTX
-            $pptxName = 'escenario_riesgo_' . $escenario->id . '_' . date('Ymd_His') . '.pptx';
-            $pptxPath = storage_path("app/tmp/{$pptxName}");
-            $writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
-            $writer->save($pptxPath);
-
-            // Limpieza del PNG al finalizar la descarga
-            return response()->download($pptxPath, $pptxName)->deleteFileAfterSend(true);
-        } else {
-
-            // se recorre por cada tipo que haya (inundaciones - movimiento_masa)
-            foreach ($plantillas as $tipo => $data) {
-
-                $chromeUserDir  = storage_path('app/chrome-user');
-                $chromeDataDir  = storage_path('app/chrome-data');
-                $chromeCacheDir = storage_path('app/chrome-cache');
-
-                // Opcional: decirle a Chrome/Puppeteer que use storage/ como "home"
-                putenv('HOME=' . storage_path('app'));
-                putenv('XDG_CONFIG_HOME=' . storage_path('app'));
-                putenv('XDG_CACHE_HOME=' . storage_path('app'));
-
-                $html = view($formulario[$escenario->formulario_id], compact('escenario', 'data', 'tipo'))->render();
-
-                $pngName = 'card-' . Str::uuid() . '.png';
-                $pngPath = storage_path("app/tmp/{$pngName}");
-                @mkdir(dirname($pngPath), 0775, true);
-
-                Browsershot::html($html)
-                    ->setChromePath('/usr/bin/chromium')
-                    ->setNodeBinary('/usr/bin/node')
-                    ->setNpmBinary('/usr/bin/npm')
-                    ->addChromiumArguments([
-                        '--no-sandbox',
-                        '--disable-gpu',
-                        '--disable-dev-shm-usage',
-                    ])
-                    ->windowSize(1280, 720)
-                    ->deviceScaleFactor(3)
-                    ->timeout(120)
-                    ->save($pngPath);
-
-                // se usa en produccion
-                // Browsershot::html($html)
-                //     ->setChromePath('/usr/bin/chromium')
-                //     ->setNodeBinary('/usr/bin/node')
-                //     ->setNpmBinary('/usr/bin/npm')
-                //     ->windowSize(1280, 720)
-                //     ->addChromiumArguments([
-                //         '--no-sandbox',
-                //         '--disable-setuid-sandbox',
-                //         '--disable-gpu',
-                //         '--disable-dev-shm-usage',
-                //         '--disable-crash-reporter',
-                //         '--noerrdialogs',
-                //         '--disable-extensions',
-                //         '--disable-features=TranslateUI',
-                //         '--user-data-dir=' . $chromeUserDir,
-                //         '--data-path='     . $chromeDataDir,
-                //         '--disk-cache-dir='. $chromeCacheDir,
-                //     ])
-                //     ->deviceScaleFactor(3)
-                //     ->select('#capture')
-                //     ->timeout(120)
-                //     ->save($pngPath);
-
-                // para usar localmente (dev)
-                // Browsershot::html($html)
-                //     ->select('#capture')
-                //     ->windowSize(1280, 720)
-                //     ->deviceScaleFactor(3)
-                //     ->timeout(60)
-                //     ->save($pngPath);
-
-                // Crear una diapositiva (solo la primera usa getActiveSlide())
-                $slide = ($tipo === 'inundaciones')
-                    ? $ppt->getActiveSlide()
-                    : $ppt->createSlide();
-
-                $shape = $slide->createDrawingShape();
-                $shape->setName('Card');
-                $shape->setDescription('Card exportado');
-                $shape->setPath($pngPath);
-                $shape->setResizeProportional(true);
-
-                $slideW = 960;
-                $slideH = 540;
-                $shape->setHeight(520);
-                $imgW = $shape->getWidth();
-                $imgH = $shape->getHeight();
-                $shape->setOffsetX(($slideW - $imgW) / 2);
-                $shape->setOffsetY(($slideH - $imgH) / 2);
-            }
-
-            // 5) Guardar PPTX
-            $pptxName = 'escenario_riesgo_' . $escenario->id . '_' . date('Ymd_His') . '.pptx';
-            $pptxPath = storage_path("app/tmp/{$pptxName}");
-            $writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
-            $writer->save($pptxPath);
-
-            // Limpieza del PNG al finalizar la descarga
-            return response()->download($pptxPath, $pptxName)->deleteFileAfterSend(true);
-        }
     }
 }

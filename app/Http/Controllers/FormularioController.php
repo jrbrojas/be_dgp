@@ -9,6 +9,10 @@ class FormularioController extends Controller
 {
     /**
      * Obtener la lista de formularios
+     *
+     * Devuelve el catálogo de formularios disponibles para la creación de escenarios.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
@@ -20,6 +24,10 @@ class FormularioController extends Controller
 
     /**
      * Mostrar la información de un formulario
+     *
+     * Muestra el detalle de un formulario específico y su configuración asociada.
+     *
+     * @return Formulario
      */
     public function show(Formulario $formulario)
     {
