@@ -6,15 +6,15 @@ use App\Models\Escenario;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-class UserController extends Controller
+class UsuarioController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listado de todos los usuarios
      */
     public function index(Request $request)
     {
         $usuarios = User::with('role')->search($request['query'])->orderBy('name')->get();
-        // eviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
+        // enviar los parametros de esta forma para que el datatable del front los pueda leer sin problemas
         return response()->json([
             'list' => $usuarios,
             'total' => $usuarios->count(),
@@ -22,7 +22,7 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Guardar un nuevo usuario
      */
     public function store(Request $request)
     {
@@ -43,7 +43,7 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Mostrar informacion de un usuario
      */
     public function show(User $usuario)
     {
@@ -51,7 +51,7 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualizar informacion de un usuario
      */
     public function update(Request $request, User $usuario)
     {
@@ -72,7 +72,7 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar un usuario
      */
     public function destroy(User $usuario)
     {

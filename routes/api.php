@@ -8,8 +8,8 @@ use App\Http\Controllers\FormularioController;
 use App\Http\Controllers\PlantillaAController;
 use App\Http\Controllers\PlantillaBController;
 use App\Http\Controllers\ProvinciaController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\RolController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +27,7 @@ Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
     Route::apiResource('/formularios', FormularioController::class)->only('index', 'show');
 
     // departamentos
-    Route::apiResource('/departamentos', DepartamentoController::class)->only('index');
+    //Route::apiResource('/departamentos', DepartamentoController::class)->only('index');
 
     // provincias
     Route::apiResource('/provincias', ProvinciaController::class)->only('index');
@@ -36,8 +36,8 @@ Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
     Route::apiResource('/distritos', DistritoController::class)->only('index');
 
     //usuarios
-    Route::apiResource('/usuarios', UserController::class);
-    Route::apiResource('/roles', RoleController::class)->only('index');
+    Route::apiResource('/usuarios', UsuarioController::class);
+    Route::apiResource('/roles', RolController::class)->only('index');
 
     // auth
     Route::post('/logout', [AuthController::class, 'logout']);

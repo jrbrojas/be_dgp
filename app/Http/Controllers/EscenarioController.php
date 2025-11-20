@@ -25,6 +25,9 @@ use Spatie\Browsershot\Browsershot;
 
 class EscenarioController extends Controller
 {
+    /**
+     * Listar los escenarios
+     */
     public function index(Request $request)
     {
         $escenarios = Escenario::with('formulario')
@@ -38,6 +41,9 @@ class EscenarioController extends Controller
         ]);
     }
 
+    /**
+     * Mostrar informacion de un escenario
+     */
     public function show(Escenario $escenario)
     {
         $escenario->excel_adjunto = asset('storage/' . $escenario->excel_adjunto);
@@ -51,6 +57,9 @@ class EscenarioController extends Controller
         ]);
     }
 
+    /**
+     * Mostrar informacion de un escenario para la plataforma integrada
+     */
     public function showPI(Request $request)
     {
         $escenario = Escenario::where('formulario_id', $request->formulario)->orderBy('id', 'desc')->first();
@@ -65,6 +74,9 @@ class EscenarioController extends Controller
         ]);
     }
 
+    /**
+     * Guardar un nuevo escenario
+     */
     public function store(EscenarioStoreRequest $request)
     {
         $camposFile = [
@@ -124,6 +136,9 @@ class EscenarioController extends Controller
         return response()->json(['message' => 'Escenario creado correctamente!']);
     }
 
+    /**
+     * Actualizar un escenario
+     */
     public function update(EscenarioStoreRequest $request, Escenario $escenario)
     {
         Log::info($request->all());
@@ -212,6 +227,11 @@ class EscenarioController extends Controller
         return response()->json(['message' => 'Escenario actualizado correctamente!']);
     }
 
+    /**
+     * Eliminar un escenario
+     *
+     * @response array{"message":"Escenario eliminado exitosamente!"}
+     */
     public function destroy(Request $request, Escenario $escenario)
     {
         $camposFile = [
@@ -288,6 +308,9 @@ class EscenarioController extends Controller
         return Storage::disk('public')->download($path, $fileName);
     }
 
+    /**
+     * Descargar excel
+     */
     public function download(Request $request, Escenario $escenario)
     {
         $formulario = [

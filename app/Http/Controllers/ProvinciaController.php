@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 class ProvinciaController extends Controller
 {
+    /**
+     * Obtener todas las provincias
+     */
     public function index(Request $request)
     {
         return Provincia::when($request->get('departamento_id'), function ($query, $id) {

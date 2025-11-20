@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 
 class DistritoController extends Controller
 {
+    /**
+     * Obtener todos los distritos
+     */
     public function index(Request $request)
     {
         return Distrito::when($request->get('departamento_id'), function ($query, $id) {
