@@ -24,6 +24,7 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'role_id',
         'name',
+        'lastname',
         'email',
         'password',
         'avatar',
@@ -55,6 +56,7 @@ class User extends Authenticatable implements JWTSubject
     public function scopeSearch(Builder $query, $value)
     {
         $query->where('name', 'ilike', "%{$value}%")
+            ->orWhere('lastname', 'ilike', "%{$value}%")
             ->orWhere('email', 'ilike', "%{$value}%");
     }
 

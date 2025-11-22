@@ -17,7 +17,8 @@ class UserSeeder extends Seeder
         User::create([
             'role_id' => 1,
             'avatar' => '/img/avatars/thumb-2.jpg',
-            'name' => 'Administrador',
+            'name' => 'Super',
+            'lastname' => 'Admin',
             'email' => 'admin@cenepred.gob.pe',
             'password' => '$Cenepred2025$',
         ]);
@@ -26,6 +27,7 @@ class UserSeeder extends Seeder
             'role_id' => 2,
             'avatar' => '/img/avatars/thumb-1.jpg',
             'name' => 'Usuario',
+            'lastname' => 'Secundario',
             'email' => 'usuario@cenepred.gob.pe',
             'password' => '$Cenepred2025$',
         ]);

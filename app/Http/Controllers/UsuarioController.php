@@ -38,6 +38,7 @@ class UsuarioController extends Controller
         $data = $request->validate([
             'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'sometimes|string|min:5',
             'password_confirmation' => 'sometimes|required_with:password|same:password',
@@ -74,6 +75,7 @@ class UsuarioController extends Controller
         $data = $request->validate([
             'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
             'password' => 'sometimes|nullable|string|min:5',
             'password_confirmation' => 'sometimes|required_with:password|same:password',
